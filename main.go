@@ -12,7 +12,8 @@ func main() {
 	r := mux.NewRouter()
 	r.StrictSlash(false)
 
-	r.Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	r.PathPrefix("/public/").Handler(http.StripPrefix("/public/", http.FileServer(http.Dir("./public"))))
+	r.PathPrefix("/hello").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
 	})
 
