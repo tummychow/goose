@@ -32,3 +32,21 @@ func (s *UtilSuite) TestNameToSegments(c *check.C) {
 		c.Check(document.NameToSegments(entry.Name), check.DeepEquals, entry.Segments, check.Commentf("Name: %#v", entry.Name))
 	}
 }
+
+var segmentsTable = []struct {
+	Segments []string
+	Name     string
+}{
+	{[]string{"Foo", "Bar", "Baz"}, "/Foo/Bar/Baz"},
+	{[]string{"base", "o(n)", "10%", "val Foo"}, "/base/o(n)/10%/val Foo"},
+	{[]string{"<>,.?;:'\"[]{}", "\\|=+-_`~", "!@#$%^&*()"}, "/<>,.?;:'\"[]{}/\\|=+-_`~/!@#$%^&*()"},
+	{[]string{}, ""},
+	{[]string{"世", "界", "Bar"}, ""},
+	{[]string{"either/or", "one/theother", "foo"}, ""},
+}
+
+func (s *UtilSuite) TestSegmentsToName(c *check.C) {
+	for _, entry := range segmentsTable {
+		c.Check(document.SegmentsToName(entry.Segments), check.DeepEquals, entry.Name, check.Commentf("Segments: %#v", entry.Segments))
+	}
+}
