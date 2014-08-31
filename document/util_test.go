@@ -25,6 +25,11 @@ var namesTable = []struct {
 	{"", []string{}},
 	{"/Foo//Bar", []string{}},
 	{"/世/界/Bar", []string{}},
+	{"/./Bar", []string{}},
+	{"/Bar/.", []string{}},
+	{"/Bar/..", []string{}},
+	{"/../Bar", []string{}},
+	{"/.../Bar", []string{"...", "Bar"}},
 }
 
 func (s *UtilSuite) TestNameToSegments(c *check.C) {
@@ -41,8 +46,12 @@ var segmentsTable = []struct {
 	{[]string{"base", "o(n)", "10%", "val Foo"}, "/base/o(n)/10%/val Foo"},
 	{[]string{"<>,.?;:'\"[]{}", "\\|=+-_`~", "!@#$%^&*()"}, "/<>,.?;:'\"[]{}/\\|=+-_`~/!@#$%^&*()"},
 	{[]string{}, ""},
+	{[]string{"Bar", ""}, ""},
 	{[]string{"世", "界", "Bar"}, ""},
 	{[]string{"either/or", "one/theother", "foo"}, ""},
+	{[]string{".", "foo"}, ""},
+	{[]string{"..", "foo"}, ""},
+	{[]string{"...", "foo"}, "/.../foo"},
 }
 
 func (s *UtilSuite) TestSegmentsToName(c *check.C) {

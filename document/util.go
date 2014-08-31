@@ -32,10 +32,10 @@ func NameToSegments(name string) []string {
 	if name[0] != '/' {
 		return []string{}
 	}
-	if name[len(name)-1] == '/' {
+	if strings.HasSuffix(name, "/") || strings.HasSuffix(name, "/.") || strings.HasSuffix(name, "/..") {
 		return []string{}
 	}
-	if strings.Index(name, "//") != -1 {
+	if strings.Index(name, "//") != -1 || strings.Index(name, "/./") != -1 || strings.Index(name, "/../") != -1 {
 		return []string{}
 	}
 	if strings.IndexFunc(name, func(c rune) bool {
@@ -55,6 +55,9 @@ func SegmentsToName(segments []string) string {
 		return ""
 	}
 	for _, segment := range segments {
+		if segment == "" || segment == "." || segment == ".." {
+			return ""
+		}
 		if strings.IndexFunc(segment, func(c rune) bool {
 			return !unicode.Is(ValidSegmentChars, c)
 		}) != -1 {
