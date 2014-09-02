@@ -2,7 +2,9 @@ package document_test
 
 import (
 	"github.com/tummychow/goose/document"
+	_ "github.com/tummychow/goose/document/file"
 	"gopkg.in/check.v1"
+	"os"
 	"time"
 )
 
@@ -16,6 +18,16 @@ type documentChecker struct {
 
 var DocumentEquals check.Checker = &documentChecker{
 	&check.CheckerInfo{Name: "DocumentEquals", Params: []string{"obtained", "Name", "Content"}},
+}
+
+func init() {
+	if len(os.Getenv("GOOSE_TEST_FILE")) != 0 {
+		fileStore, err := document.NewStore(os.Getenv("GOOSE_TEST_FILE"))
+		if err != nil {
+			panic(err)
+		}
+		check.Suite(&DocumentStoreSuite{Store: fileStore})
+	}
 }
 
 // Check compares a Document against an expected Name and Content. The Document
