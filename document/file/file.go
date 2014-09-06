@@ -28,17 +28,6 @@ var fileTimeFormat = "2006-01-02T15:04:05.000000000Z07:00"
 // UNIX filesystem. A Document corresponds to a folder on the filesystem, with
 // each version corresponding to an individual file under that folder.
 //
-// FileDocumentStore is primarily for development. It has several limitations:
-// - no Windows support (because \/:*?"<>| are forbidden in Windows filenames)
-// - no concurrency support; only one instance and its copies are allowed at a
-//   time. This is implemented via a mutex shared between all the copies. A
-//   future improvement would be to use lock files.
-// - locks are at the level of the entire instance, not at the level of an
-//   individual Document. Modifying one Document will lock all the others, even
-//   though they are not affected.
-// - mutex locks are acquired without the use of timeouts, so an operation can
-//   theoretically block forever in an extreme error case.
-//
 // FileDocumentStore is registered with the scheme "file". For example, you can
 // initialize a new FileDocumentStore via:
 //
@@ -53,13 +42,28 @@ var fileTimeFormat = "2006-01-02T15:04:05.000000000Z07:00"
 //
 // The path must be absolute. For example, "file://goose/docs" is invalid,
 // because "goose" would be interpreted as the host and "/docs" would be the
-// path. To avoid this error, a nonempty host string in the URI will result in
-// an error at instantiation time.
+// path. To avoid this mistake, a nonempty host string in the URI will raise an
+// error at instantiation time.
+//
+// FileDocumentStore is primarily for development. It has poor performance, and
+// it can potentially block forever or behave inconsistently because it depends
+// on a mutex that is shared across copies. If two separate non-copy instances
+// of FileDocumentStore are initialized with the same URI, incorrect behaviors
+// could occur.
+//
+// FileDocumentStore does not support Windows. The characters \/:*?"<>| are
+// forbidden in Windows filenames, but most of these are legal in a Document's
+// Name, which would create issues when trying to store such a Document on a
+// Windows filesystem.
+//
+// The flat file schema for FileDocumentStore is an implementation detail, and
+// modifications to the schema are not considered breaking. Do not rely on the
+// schema.
 type FileDocumentStore struct {
 	// root is the root directory of the FileDocumentStore.
 	root string
-	// mutex is the global mutex shared between this FileDocumentStore and all its
-	// copies.
+	// mutex is the global mutex shared between this FileDocumentStore and all
+	// its copies.
 	mutex *sync.RWMutex
 }
 
