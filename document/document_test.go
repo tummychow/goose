@@ -78,7 +78,9 @@ func (checker *documentChecker) Check(params []interface{}, names []string) (res
 }
 
 func (s *DocumentStoreSuite) SetUpTest(c *check.C) {
+	s.Store.Revert("/foo", time.Time{})
 	s.Store.Revert("/foo/bar", time.Time{})
+	s.Store.Revert("/foo/bar/baz", time.Time{})
 }
 func (s *DocumentStoreSuite) TearDownSuite(c *check.C) {
 	s.Store.Close()
@@ -162,4 +164,35 @@ func (s *DocumentStoreSuite) TestMultipleVersions(c *check.C) {
 	doc, err = s.Store.Get("/foo/bar")
 	c.Assert(err, check.NotNil)
 	c.Assert(err, check.FitsTypeOf, document.DocumentNotFoundError{})
+}
+
+func (s *DocumentStoreSuite) TestMultipleDocuments(c *check.C) {
+	ver, err := s.Store.Update("/foo", "foo v1")
+	c.Assert(err, check.IsNil)
+	c.Assert(ver, check.Equals, 1)
+	ver, err = s.Store.Update("/foo", "foo v2")
+	c.Assert(err, check.IsNil)
+	c.Assert(ver, check.Equals, 2)
+	ver, err = s.Store.Update("/foo/bar", "bar v1")
+	c.Assert(err, check.IsNil)
+	c.Assert(ver, check.Equals, 1)
+	ver, err = s.Store.Update("/foo/bar", "bar v2")
+	c.Assert(err, check.IsNil)
+	c.Assert(ver, check.Equals, 2)
+	ver, err = s.Store.Update("/foo/bar/baz", "baz v1")
+	c.Assert(err, check.IsNil)
+	c.Assert(ver, check.Equals, 1)
+	ver, err = s.Store.Update("/foo/bar/baz", "baz v2")
+	c.Assert(err, check.IsNil)
+	c.Assert(ver, check.Equals, 2)
+
+	doc, err := s.Store.Get("/foo")
+	c.Assert(err, check.IsNil)
+	c.Assert(doc, DocumentEquals, "/foo", "foo v2")
+	doc, err = s.Store.Get("/foo/bar")
+	c.Assert(err, check.IsNil)
+	c.Assert(doc, DocumentEquals, "/foo/bar", "bar v2")
+	doc, err = s.Store.Get("/foo/bar/baz")
+	c.Assert(err, check.IsNil)
+	c.Assert(doc, DocumentEquals, "/foo/bar/baz", "baz v2")
 }
