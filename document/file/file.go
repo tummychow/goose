@@ -78,22 +78,7 @@ func (s *FileDocumentStore) Get(name string) (document.Document, error) {
 		return document.Document{}, err
 	}
 
-	targetName := docdir[len(docdir)-1].Name()
-	target, err := ioutil.ReadFile(filepath.Join(s.root, name, targetName))
-	if err != nil {
-		return document.Document{}, err
-	}
-	docstamp, err := time.Parse(fileTimeFormat, targetName)
-	if err != nil {
-		return document.Document{}, err
-	}
-
-	return document.Document{
-		Name:      name,
-		Content:   string(target),
-		Timestamp: docstamp,
-		Source:    s,
-	}, nil
+	return s.readDocument(name, docdir[len(docdir)-1])
 }
 
 func (s *FileDocumentStore) GetAll(name string) ([]document.Document, error) {
@@ -107,21 +92,11 @@ func (s *FileDocumentStore) GetAll(name string) ([]document.Document, error) {
 
 	ret := make([]document.Document, 0, len(docdir))
 	for i := len(docdir) - 1; i >= 0; i-- {
-		targetName := docdir[i].Name()
-		target, err := ioutil.ReadFile(filepath.Join(s.root, name, targetName))
+		doc, err := s.readDocument(name, docdir[i])
 		if err != nil {
 			return []document.Document{}, err
 		}
-		docstamp, err := time.Parse(fileTimeFormat, targetName)
-		if err != nil {
-			return []document.Document{}, err
-		}
-		ret = append(ret, document.Document{
-			Name:      name,
-			Content:   string(target),
-			Timestamp: docstamp,
-			Source:    s,
-		})
+		ret = append(ret, doc)
 	}
 
 	return ret, nil
@@ -227,4 +202,27 @@ func (s *FileDocumentStore) readDirFiles(name string) ([]os.FileInfo, error) {
 		return []os.FileInfo{}, document.DocumentNotFoundError{name}
 	}
 	return ret, nil
+}
+
+// readDocument takes a single file and unmarshals it into a Document.
+func (s *FileDocumentStore) readDocument(name string, target os.FileInfo) (document.Document, error) {
+	timestamp, err := time.Parse(fileTimeFormat, target.Name())
+	if err != nil {
+		return document.Document{}, err
+	}
+	content, err := ioutil.ReadFile(filepath.Join(s.root, name, target.Name()))
+	if err != nil {
+		if pathErr, ok := err.(*os.PathError); ok {
+			if pathErr.Err.Error() == "no such file or directory" {
+				return document.Document{}, document.DocumentNotFoundError{name}
+			}
+		}
+		return document.Document{}, err
+	}
+	return document.Document{
+		Name:      name,
+		Content:   string(content),
+		Timestamp: timestamp,
+		Source:    s,
+	}, nil
 }
