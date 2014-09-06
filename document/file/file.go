@@ -75,6 +75,11 @@ func (s *FileDocumentStore) Get(name string) (document.Document, error) {
 
 	docdir, err := ioutil.ReadDir(filepath.Join(s.root, name))
 	if err != nil {
+		if pathErr, ok := err.(*os.PathError); ok {
+			if pathErr.Err.Error() == "no such file or directory" {
+				return document.Document{}, document.DocumentNotFoundError{name}
+			}
+		}
 		return document.Document{}, err
 	}
 	if len(docdir) == 0 {
@@ -105,6 +110,11 @@ func (s *FileDocumentStore) GetAll(name string) ([]document.Document, error) {
 
 	docdir, err := ioutil.ReadDir(filepath.Join(s.root, name))
 	if err != nil {
+		if pathErr, ok := err.(*os.PathError); ok {
+			if pathErr.Err.Error() == "no such file or directory" {
+				return []document.Document{}, document.DocumentNotFoundError{name}
+			}
+		}
 		return []document.Document{}, err
 	}
 	if len(docdir) == 0 {
@@ -161,6 +171,11 @@ func (s *FileDocumentStore) Revert(name string, version time.Time) (int, error) 
 
 	docdir, err := ioutil.ReadDir(filepath.Join(s.root, name))
 	if err != nil {
+		if pathErr, ok := err.(*os.PathError); ok {
+			if pathErr.Err.Error() == "no such file or directory" {
+				return 0, document.DocumentNotFoundError{name}
+			}
+		}
 		return 0, err
 	}
 	if len(docdir) == 0 {
@@ -191,6 +206,11 @@ func (s *FileDocumentStore) Truncate(name string, version time.Time) (int, error
 
 	docdir, err := ioutil.ReadDir(filepath.Join(s.root, name))
 	if err != nil {
+		if pathErr, ok := err.(*os.PathError); ok {
+			if pathErr.Err.Error() == "no such file or directory" {
+				return 0, document.DocumentNotFoundError{name}
+			}
+		}
 		return 0, err
 	}
 	if len(docdir) == 0 {

@@ -93,6 +93,16 @@ func (s *DocumentStoreSuite) TestEmpty(c *check.C) {
 	c.Assert(err, check.NotNil)
 	c.Assert(err, check.FitsTypeOf, document.DocumentNotFoundError{})
 	c.Assert(docAll, check.HasLen, 0)
+
+	reverts, err := s.Store.Revert("/foo/bar", time.Time{})
+	c.Assert(err, check.NotNil)
+	c.Assert(err, check.FitsTypeOf, document.DocumentNotFoundError{})
+	c.Assert(reverts, check.Equals, 0)
+
+	truncates, err := s.Store.Truncate("/foo/bar", time.Time{})
+	c.Assert(err, check.NotNil)
+	c.Assert(err, check.FitsTypeOf, document.DocumentNotFoundError{})
+	c.Assert(truncates, check.Equals, 0)
 }
 
 func (s *DocumentStoreSuite) TestBasic(c *check.C) {
