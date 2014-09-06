@@ -73,17 +73,9 @@ func (s *FileDocumentStore) Get(name string) (document.Document, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
-	docdir, err := ioutil.ReadDir(filepath.Join(s.root, name))
+	docdir, err := s.readDirFiles(name)
 	if err != nil {
-		if pathErr, ok := err.(*os.PathError); ok {
-			if pathErr.Err.Error() == "no such file or directory" {
-				return document.Document{}, document.DocumentNotFoundError{name}
-			}
-		}
 		return document.Document{}, err
-	}
-	if len(docdir) == 0 {
-		return document.Document{}, document.DocumentNotFoundError{name}
 	}
 
 	targetName := docdir[len(docdir)-1].Name()
@@ -108,17 +100,9 @@ func (s *FileDocumentStore) GetAll(name string) ([]document.Document, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
-	docdir, err := ioutil.ReadDir(filepath.Join(s.root, name))
+	docdir, err := s.readDirFiles(name)
 	if err != nil {
-		if pathErr, ok := err.(*os.PathError); ok {
-			if pathErr.Err.Error() == "no such file or directory" {
-				return []document.Document{}, document.DocumentNotFoundError{name}
-			}
-		}
 		return []document.Document{}, err
-	}
-	if len(docdir) == 0 {
-		return []document.Document{}, document.DocumentNotFoundError{name}
 	}
 
 	ret := make([]document.Document, 0, len(docdir))
@@ -158,7 +142,7 @@ func (s *FileDocumentStore) Update(name, content string) (int, error) {
 		return 0, err
 	}
 
-	docdir, err := ioutil.ReadDir(filepath.Join(s.root, name))
+	docdir, err := s.readDirFiles(name)
 	if err != nil {
 		return 0, err
 	}
@@ -169,17 +153,9 @@ func (s *FileDocumentStore) Revert(name string, version time.Time) (int, error) 
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	docdir, err := ioutil.ReadDir(filepath.Join(s.root, name))
+	docdir, err := s.readDirFiles(name)
 	if err != nil {
-		if pathErr, ok := err.(*os.PathError); ok {
-			if pathErr.Err.Error() == "no such file or directory" {
-				return 0, document.DocumentNotFoundError{name}
-			}
-		}
 		return 0, err
-	}
-	if len(docdir) == 0 {
-		return 0, document.DocumentNotFoundError{name}
 	}
 
 	i := len(docdir) - 1 // we need this outside the loop scope
@@ -204,17 +180,9 @@ func (s *FileDocumentStore) Truncate(name string, version time.Time) (int, error
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	docdir, err := ioutil.ReadDir(filepath.Join(s.root, name))
+	docdir, err := s.readDirFiles(name)
 	if err != nil {
-		if pathErr, ok := err.(*os.PathError); ok {
-			if pathErr.Err.Error() == "no such file or directory" {
-				return 0, document.DocumentNotFoundError{name}
-			}
-		}
 		return 0, err
-	}
-	if len(docdir) == 0 {
-		return 0, document.DocumentNotFoundError{name}
 	}
 
 	i := 0 // we need this outside the loop scope
@@ -233,4 +201,30 @@ func (s *FileDocumentStore) Truncate(name string, version time.Time) (int, error
 		}
 	}
 	return i, nil
+}
+
+// readDirFiles returns the sorted list of files for the named Document, from
+// oldest to newest. Returns DocumentNotFoundError as needed.
+func (s *FileDocumentStore) readDirFiles(name string) ([]os.FileInfo, error) {
+	docdir, err := ioutil.ReadDir(filepath.Join(s.root, name))
+	if err != nil {
+		if pathErr, ok := err.(*os.PathError); ok {
+			if pathErr.Err.Error() == "no such file or directory" {
+				return []os.FileInfo{}, document.DocumentNotFoundError{name}
+			}
+		}
+		return []os.FileInfo{}, err
+	}
+
+	ret := make([]os.FileInfo, 0, len(docdir))
+	for _, fileinfo := range docdir {
+		if fileinfo.IsDir() {
+			continue
+		}
+		ret = append(ret, fileinfo)
+	}
+	if len(ret) == 0 {
+		return []os.FileInfo{}, document.DocumentNotFoundError{name}
+	}
+	return ret, nil
 }
