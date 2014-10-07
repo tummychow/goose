@@ -5,9 +5,12 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/tummychow/goose/document"
 	_ "github.com/tummychow/goose/document/file"
+	"html/template"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 )
 
 // Initializes the DocumentStore instance that the application will use. If the
@@ -24,6 +27,47 @@ func initializeStore() document.DocumentStore {
 	ret, err := document.NewStore(backendURI)
 	if err != nil {
 		fmt.Printf("Error while initializing GOOSE_BACKEND=%q\n%v\n", backendURI, err)
+		os.Exit(1)
+	}
+	return ret
+}
+
+// Initializes the templates provided to the application. All files under the
+// given directory will be parsed as Go templates and associated together. The
+// entire associated group is then returned. Each template in the group has its
+// name set to the location of the originating file, relative to the target
+// directory.
+func initializeTemplates(target string) *template.Template {
+	ret := template.New(target)
+
+	err := filepath.Walk(target, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+
+		relpath, err := filepath.Rel(target, path)
+		if err != nil {
+			return err
+		}
+		content, err := ioutil.ReadFile(path)
+		if err != nil {
+			return err
+		}
+
+		_, err = ret.New(relpath).Parse(string(content))
+		if err != nil {
+			fmt.Printf("Error while parsing template at %q\n%v\n", path, err)
+			// maybe this wasn't supposed to be a template, so we'll skip the
+			// error and continue walking
+		}
+		return nil
+	})
+
+	if err != nil {
+		fmt.Printf("Error while initializing goose templates at %q\n%v\n", target, err)
 		os.Exit(1)
 	}
 	return ret
