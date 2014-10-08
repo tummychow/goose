@@ -1,0 +1,23 @@
+{
+  "name": "goose",
+  "version": "0.0.0",
+  "description": "go markdown wiki",
+  "main": "gulpfile.js",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tummychow/goose.git"
+  },
+  "author": "",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/tummychow/goose/issues"
+  },
+  "homepage": "https://github.com/tummychow/goose",
+  "devDependencies": {
+    "gulp": "^3.8.8"
+  }
+}
