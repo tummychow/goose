@@ -1,0 +1,11 @@
+{
+  "name": "goose",
+  "version": "0.0.0",
+  "homepage": "https://github.com/tummychow/goose",
+  "authors": [
+    "tummychow <tummychow@users.noreply.github.com>"
+  ],
+  "description": "go markdown wiki",
+  "license": "BSD-3-Clause",
+  "private": true
+}
