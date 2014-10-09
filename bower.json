@@ -9,6 +9,17 @@
   "license": "BSD-3-Clause",
   "private": true,
   "dependencies": {
-    "min": "https://github.com/owenversteeg/min.git#b11486098aafa5813719130f450602af83d98a6b"
+    "min": "https://github.com/owenversteeg/min.git#b11486098aafa5813719130f450602af83d98a6b",
+    "prism": "https://github.com/LeaVerou/prism.git#837d1d69bf4f4fd083f68b4b37d96aa8930754ec",
+    "marked": "^0.3.2",
+    "xss": "^0.1.12"
+  },
+  "overrides": {
+    "prism": {
+      "main": "prism.js"
+    },
+    "marked": {
+      "main": "lib/marked.js"
+    }
   }
 }
