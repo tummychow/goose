@@ -1,6 +1,14 @@
+var path = require('path');
+
 var gulp = require('gulp');
 var $ = require('gulp-load-plugins')();
 var bower_components = require('main-bower-files')();
+
+var newenv = process.env;
+var gpm_dir = __dirname + path.sep + '.godeps';
+if (newenv.GOPATH.split(path.delimiter).indexOf(gpm_dir) == -1) {
+  newenv.GOPATH = gpm_dir + path.delimiter + newenv.GOPATH;
+}
 
 gulp.task('css', function() {
   return gulp.src(bower_components)
@@ -19,7 +27,7 @@ gulp.task('js', function() {
 });
 
 gulp.task('go', function() {
-  return $.run('GOPATH=$PWD/.godeps:$GOPATH go build').exec();
+  return $.run('go build', {env: newenv}).exec();
 });
 
 gulp.task('default', function() {
