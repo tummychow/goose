@@ -31,7 +31,7 @@ gulp.task('js', function() {
 gulp.task('go', function() {
   var newenv = process.env;
   newenv.GOPATH = gopath();
-  return $.run('go build', {env: newenv}).exec();
+  return $.run('go build -o goose', {env: newenv}).exec();
 });
 
 gulp.task('default', function() {
