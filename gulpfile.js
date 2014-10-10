@@ -34,6 +34,4 @@ gulp.task('go', function() {
   return $.run('go build -o goose', {env: newenv}).exec();
 });
 
-gulp.task('default', function() {
-  // place code for your default task here
-});
+gulp.task('default', ['go', 'css', 'js'], function() {});
