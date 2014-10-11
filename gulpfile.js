@@ -4,15 +4,23 @@ var gulp = require('gulp');
 var $ = require('gulp-load-plugins')();
 
 var bower_components = require('main-bower-files')();
-var minimist = require('minimist');
 
-var gopath = function() {
+(function() {
   var gpm_dir = __dirname + path.sep + '.godeps';
-  if (process.env.GOPATH.split(path.delimiter).indexOf(gpm_dir) != -1) {
-    return process.env.GOPATH;
+  var argv = require('minimist')(process.argv);
+
+  process.env.GOOSE_DEV = 'true';
+
+  if (process.env.GOPATH.split(path.delimiter).indexOf(gpm_dir) == -1) {
+    process.env.GOPATH = gpm_dir + path.delimiter + process.env.GOPATH;
   }
-  return gpm_dir + path.delimiter + process.env.GOPATH;
-}
+  if (!process.env.GOOSE_PORT) {
+    process.env.GOOSE_PORT = ':' + (process.env.PORT || argv.port || '8000');
+  }
+  if (!process.env.GOOSE_BACKEND) {
+    process.env.GOOSE_BACKEND = argv.backend || 'file:///tmp/goose';
+  }
+})();
 
 gulp.task('css', function() {
   return gulp.src(bower_components)
@@ -31,28 +39,16 @@ gulp.task('js', function() {
 });
 
 gulp.task('go', function() {
-  var newenv = process.env;
-  newenv.GOPATH = gopath();
-  return $.run('go build -o goose', {env: newenv}).exec();
+  return $.run('go build -o goose').exec();
 });
 
 gulp.task('test', function() {
-  var newenv = process.env;
-  newenv.GOPATH = gopath();
-  return $.run('go test ./...', {env: newenv}).exec();
+  return $.run('go test ./...').exec();
 });
 
 gulp.task('serve', function() {
-  var newenv = process.env;
-  var flags = minimist(process.argv);
-  if (!newenv.GOOSE_PORT) {
-    newenv.GOOSE_PORT = ':' + (newenv.PORT || flags.port || '8000');
-  }
-  if (!newenv.GOOSE_BACKEND) {
-    newenv.GOOSE_BACKEND = flags.backend || 'file:///tmp/goose';
-  }
-  console.log('Starting goose on port ' + newenv.GOOSE_PORT + ' with backend ' + newenv.GOOSE_BACKEND);
-  return $.run('./goose', {env: newenv}).exec();
+  console.log('Starting goose on port ' + process.env.GOOSE_PORT + ' with backend ' + process.env.GOOSE_BACKEND);
+  return $.run('./goose').exec();
 });
 
 gulp.task('default', ['go', 'css', 'js'], function() {});

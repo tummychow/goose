@@ -38,7 +38,10 @@ func main() {
 		masterStore.Update("/foo/bar", "Welcome to the page **foo bar**\n```ruby\nfoo.each {|i| puts i}\n```")
 	}
 
-	t := render.New(render.Options{Layout: "layout"})
+	t := render.New(render.Options{
+		Layout:        "layout",
+		IsDevelopment: len(os.Getenv("GOOSE_DEV")) != 0,
+	})
 
 	r := mux.NewRouter()
 	r.StrictSlash(false)
