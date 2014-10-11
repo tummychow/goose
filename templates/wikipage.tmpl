@@ -3,4 +3,4 @@
 <hr></hr>
 
 <div id="md"></div>
-<script>document.getElementById('md').innerHTML = marked('{{ .Doc.Content }}');</script>
+<script>document.getElementById('md').innerHTML = marked('{{ .Doc.Content }}', {langPrefix: "language-"});</script>
