@@ -5,12 +5,10 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/tummychow/goose/document"
 	_ "github.com/tummychow/goose/document/file"
-	"html/template"
-	"io/ioutil"
+	"gopkg.in/unrolled/render.v1"
 	"net/http"
 	"net/url"
 	"os"
-	"path/filepath"
 )
 
 // Initializes the DocumentStore instance that the application will use. If the
@@ -32,47 +30,6 @@ func initializeStore() document.DocumentStore {
 	return ret
 }
 
-// Initializes the templates provided to the application. All files under the
-// given directory will be parsed as Go templates and associated together. The
-// entire associated group is then returned. Each template in the group has its
-// name set to the location of the originating file, relative to the target
-// directory.
-func initializeTemplates(target string) *template.Template {
-	ret := template.New(target)
-
-	err := filepath.Walk(target, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if info.IsDir() {
-			return nil
-		}
-
-		relpath, err := filepath.Rel(target, path)
-		if err != nil {
-			return err
-		}
-		content, err := ioutil.ReadFile(path)
-		if err != nil {
-			return err
-		}
-
-		_, err = ret.New(relpath).Parse(string(content))
-		if err != nil {
-			fmt.Printf("Error while parsing template at %q\n%v\n", path, err)
-			// maybe this wasn't supposed to be a template, so we'll skip the
-			// error and continue walking
-		}
-		return nil
-	})
-
-	if err != nil {
-		fmt.Printf("Error while initializing goose templates at %q\n%v\n", target, err)
-		os.Exit(1)
-	}
-	return ret
-}
-
 func main() {
 	masterStore := initializeStore()
 	defer masterStore.Close()
@@ -80,6 +37,8 @@ func main() {
 	if _, ok := err.(document.DocumentNotFoundError); ok {
 		masterStore.Update("/foo/bar", "Welcome to the page foo bar")
 	}
+
+	t := render.New(render.Options{Layout: "layout"})
 
 	r := mux.NewRouter()
 	r.StrictSlash(false)
@@ -117,7 +76,10 @@ func main() {
 			return
 		}
 
-		fmt.Fprintf(w, "Requested\n%q\n\nName\n%v\n\nTimestamp\n%v\n\nContents\n%v", targetName, doc.Name, doc.Timestamp.Local().Format("Jan 2 2006 15:04:05"), doc.Content)
+		t.HTML(w, http.StatusOK, "wikipage", map[string]interface{}{
+			"Title": doc.Name,
+			"Doc":   doc,
+		})
 	})
 
 	http.ListenAndServe(os.Getenv("GOOSE_PORT"), r)
