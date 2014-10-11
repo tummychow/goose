@@ -55,24 +55,35 @@ func main() {
 
 		targetName, err := url.QueryUnescape(r.URL.Path[2:])
 		if err != nil {
-			http.Error(w, err.Error(), 500)
+			t.HTML(w, http.StatusInternalServerError, "wiki500", map[string]interface{}{
+				"Title": "Error",
+				"Error": err.Error(),
+			})
 			return
 		}
 
 		store, err := masterStore.Copy()
 		if err != nil {
-			http.Error(w, "Could not copy DocumentStore", 500)
+			t.HTML(w, http.StatusInternalServerError, "wiki500", map[string]interface{}{
+				"Title": "Error",
+				"Error": err.Error(),
+			})
 			return
 		}
 		defer store.Close()
 
 		doc, err := store.Get(targetName)
 		if _, ok := err.(document.DocumentNotFoundError); ok {
-			w.WriteHeader(404)
-			fmt.Fprintf(w, "You requested page %q, but it doesn't exist", targetName)
+			t.HTML(w, http.StatusNotFound, "wiki404", map[string]interface{}{
+				"Title": targetName,
+				"Name":  targetName,
+			})
 			return
 		} else if err != nil {
-			http.Error(w, err.Error(), 500)
+			t.HTML(w, http.StatusInternalServerError, "wiki500", map[string]interface{}{
+				"Title": "Error",
+				"Error": err.Error(),
+			})
 			return
 		}
 
