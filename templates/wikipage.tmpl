@@ -1,6 +1,20 @@
-<h1>{{ .Doc.Name }}</h1>
-<small>{{ .Doc.Timestamp.Local.Format "Jan 2 2006 15:04:05" }}</small>
-<hr></hr>
+<body>
+  <nav class="nav">
+    <div class="container">
+      <a class="pagename current">{{ .Doc.Name }}</a>
+      <a href="/">Home</a>
+      <a href="#">Edit</a>
+      <a href="#">History</a>
+    </div>
+  </nav>
 
-<div id="md"></div>
-<script>document.getElementById('md').innerHTML = marked('{{ .Doc.Content }}', {langPrefix: "language-"});</script>
+  <div class="container"><div id="md"></div></div>
+
+  <script data-manual src="/public/main.js"></script>
+  <script>document.getElementById('md').innerHTML = marked('{{ .Doc.Content }}', {
+    langPrefix: "language-",
+    highlight: function(code, lang) {
+      return Prism.highlight(code, Prism.languages[lang]);
+    }
+  });</script>
+</body>

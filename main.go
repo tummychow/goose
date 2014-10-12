@@ -35,7 +35,7 @@ func main() {
 	defer masterStore.Close()
 	_, err := masterStore.Get("/foo/bar")
 	if _, ok := err.(document.DocumentNotFoundError); ok {
-		masterStore.Update("/foo/bar", "Welcome to the page **foo bar**\n```ruby\nfoo.each {|i| puts i}\n```")
+		masterStore.Update("/foo/bar", "#supdawg\nWelcome to the page **foo bar**\n```javascript\nvar foo = require('bar');\n```")
 	}
 
 	t := render.New(render.Options{
