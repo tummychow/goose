@@ -11,10 +11,23 @@
   <div class="container"><div id="md"></div></div>
 
   <script data-manual src="/public/main.js"></script>
-  <script>document.getElementById('md').innerHTML = marked('{{ .Doc.Content }}', {
+  <script>
+  var renderMin = new marked.Renderer();
+  renderMin.table = function(header, body) {
+    return '<table class=\'table\'>\n'
+    + '<thead>\n'
+    + header
+    + '</thead>\n'
+    + '<tbody>\n'
+    + body
+    + '</tbody>\n'
+    + '</table>\n';
+  };
+  document.getElementById('md').innerHTML = marked('{{ .Doc.Content }}', {
     langPrefix: "language-",
     highlight: function(code, lang) {
       return Prism.highlight(code, Prism.languages[lang]);
-    }
+    },
+    renderer: renderMin
   });</script>
 </body>
