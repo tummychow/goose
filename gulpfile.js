@@ -1,24 +1,50 @@
 var path = require('path');
+var child = require('child_process');
+
+var argv = require('minimist')(process.argv);
+var browsersync = require('browser-sync');
+var forever = require('forever-monitor');
 
 var gulp = require('gulp');
 var $ = require('gulp-load-plugins')();
 
 (function() {
   var gpm_dir = __dirname + path.sep + '.godeps';
-  var argv = require('minimist')(process.argv);
 
   process.env.GOOSE_DEV = 'true';
+  // clobber this variable to make sure browsersync has its own port
+  process.env.GOOSE_PORT = ':8005';
 
   if (process.env.GOPATH.split(path.delimiter).indexOf(gpm_dir) == -1) {
     process.env.GOPATH = gpm_dir + path.delimiter + process.env.GOPATH;
-  }
-  if (!process.env.GOOSE_PORT) {
-    process.env.GOOSE_PORT = ':' + (process.env.PORT || argv.port || '8000');
   }
   if (!process.env.GOOSE_BACKEND) {
     process.env.GOOSE_BACKEND = argv.backend || 'file:///tmp/goose';
   }
 })();
+
+// returns a gulp task that calls the given command, eg
+// gulp.task('foo', spawntask(['foo', 'bar', 'baz']));
+function spawntask(cmdargs) {
+  return (function(cb) {
+    $.util.log($.util.colors.blue(cmdargs.join(' ')));
+    child.spawn(cmdargs[0], cmdargs.slice(1), {
+      cwd: process.cwd(),
+      env: process.env,
+      stdio: 'inherit',
+    }).on('exit', function(code, signal) {
+      if (code !== 0) {
+        cb(code);
+      } else {
+        cb();
+      }
+    });
+  });
+}
+
+gulp.task('go', spawntask(['go', 'build', '-o', 'goose']));
+
+gulp.task('test', spawntask(['go', 'test', './...']));
 
 gulp.task('css', function() {
   // minifyCss does not support sourcemaps, see jakubpawlowicz/clean-css#125
@@ -50,17 +76,35 @@ gulp.task('js', function() {
     .pipe(gulp.dest('./public'));
 });
 
-gulp.task('go', function() {
-  return $.run('go build -o goose').exec();
-});
+gulp.task('default', function() {
+  console.log('Using backend \"' + process.env.GOOSE_BACKEND + '\"');
+  var gooseproc = forever.start(['./goose'], {
+    max: 1,
+    killTree: true,
+    watch: false,
+  });
 
-gulp.task('test', function() {
-  return $.run('go test ./...').exec();
-});
+  browsersync({
+    proxy: "127.0.0.1" + process.env.GOOSE_PORT,
+    port: argv.port || process.env.PORT || 8000,
+    files: ['public/*.{js,css}', 'templates/*.tmpl'],
+    online: false,
+    open: false,
+  });
+  gooseproc.on('restart', browsersync.reload);
 
-gulp.task('serve', function() {
-  console.log('Starting goose on port ' + process.env.GOOSE_PORT + ' with backend ' + process.env.GOOSE_BACKEND);
-  return $.run('./goose').exec();
-});
+  gulp.watch('js/*.js', ['js']);
+  gulp.watch('css/*.css', ['css']);
 
-gulp.task('default', ['go', 'css', 'js'], function() {});
+  gulp.watch('**/*.go', function() {
+    // we cannot say this:
+    // gulp.watch('**/*.go', ['go'], function(err) {...});
+    // because the callback might get called before the 'go' task is finished,
+    // and we need them to run in strictly series order
+    gulp.start('go', function(err) {
+      if (!err) {
+        gooseproc.restart();
+      }
+    });
+  });
+});
