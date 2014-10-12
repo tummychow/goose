@@ -40,6 +40,7 @@ gulp.task('js', function() {
       // this list is order-sensitive, since some languages extend others
       // grep for "Prism.languages.extend" to find the dependencies
       'bower_components/prism/components/prism-{core,clike,css,c,bash,cpp,git,go,haskell,http,ini,java,javascript,latex,markup,python,ruby,scss,sql}.js',
+      'js/*.js',
     ])
     .pipe($.filter('**/*.js'))
     .pipe($.sourcemaps.init())
