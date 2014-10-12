@@ -3,8 +3,6 @@ var path = require('path');
 var gulp = require('gulp');
 var $ = require('gulp-load-plugins')();
 
-var bower_components = require('main-bower-files')();
-
 (function() {
   var gpm_dir = __dirname + path.sep + '.godeps';
   var argv = require('minimist')(process.argv);
@@ -23,7 +21,12 @@ var bower_components = require('main-bower-files')();
 })();
 
 gulp.task('css', function() {
-  return gulp.src(bower_components)
+  // minifyCss does not support sourcemaps, see jakubpawlowicz/clean-css#125
+  return gulp.src([
+      'bower_components/min/compiled/*.css',
+      '!bower_components/min/compiled/*.min.css',
+      'bower_components/prism/themes/prism.css',
+    ])
     .pipe($.filter('**/*.css'))
     .pipe($.concat('main.css'))
     .pipe($.minifyCss())
@@ -31,10 +34,18 @@ gulp.task('css', function() {
 });
 
 gulp.task('js', function() {
-  return gulp.src(bower_components)
+  return gulp.src([
+      'bower_components/marked/lib/marked.js',
+      'bower_components/xss/dist/xss.js',
+      // this list is order-sensitive, since some languages extend others
+      // grep for "Prism.languages.extend" to find the dependencies
+      'bower_components/prism/components/prism-{core,clike,css,c,bash,cpp,git,go,haskell,http,ini,java,javascript,latex,markup,python,ruby,scss,sql}.js',
+    ])
     .pipe($.filter('**/*.js'))
-    .pipe($.concat('main.js'))
-    .pipe($.uglify())
+    .pipe($.sourcemaps.init())
+      .pipe($.concat('main.js'))
+      .pipe($.uglify())
+    .pipe($.sourcemaps.write('.'))
     .pipe(gulp.dest('./public'));
 });
 
