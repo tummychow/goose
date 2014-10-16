@@ -52,8 +52,8 @@ gulp.task('css', function() {
       'bower_components/min/compiled/*.css',
       '!bower_components/min/compiled/*.min.css',
       'bower_components/prism/themes/prism.css',
+      'css/*.css',
     ])
-    .pipe($.filter('**/*.css'))
     .pipe($.concat('main.css'))
     .pipe($.minifyCss())
     .pipe(gulp.dest('./public'));
@@ -68,7 +68,6 @@ gulp.task('js', function() {
       'bower_components/prism/components/prism-{core,clike,css,c,bash,cpp,git,go,haskell,http,ini,java,javascript,latex,markup,python,ruby,scss,sql}.js',
       'js/*.js',
     ])
-    .pipe($.filter('**/*.js'))
     .pipe($.sourcemaps.init())
       .pipe($.concat('main.js'))
       .pipe($.uglify())
