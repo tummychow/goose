@@ -21,3 +21,6 @@ marked.setOptions({
     return renderMin;
   })()
 });
+
+var md = document.getElementById('md');
+md.innerHTML = marked(md.getAttribute('data-md'));

@@ -8,10 +8,7 @@
     </div>
   </nav>
 
-  <div class="container" id="md"></div>
+  <div class="container" id="md" data-md="{{ .Doc.Content }}"></div>
 
   <script data-manual src="/public/main.js"></script>
-  <script>
-    document.getElementById('md').innerHTML = marked('{{ .Doc.Content }}');
-  </script>
 </body>
