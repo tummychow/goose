@@ -7,7 +7,6 @@ import (
 	_ "github.com/tummychow/goose/document/file"
 	"gopkg.in/unrolled/render.v1"
 	"net/http"
-	"net/url"
 	"os"
 )
 
@@ -38,7 +37,7 @@ func main() {
 		masterStore.Update("/foo/bar", "#supdawg\nWelcome to the page **foo bar**\n```javascript\nvar foo = require('bar');\n```")
 	}
 
-	t := render.New(render.Options{
+	renderer := render.New(render.Options{
 		Layout:        "layout",
 		IsDevelopment: len(os.Getenv("GOOSE_DEV")) != 0,
 	})
@@ -50,51 +49,7 @@ func main() {
 	r.Methods("GET").PathPrefix("/public/").Handler(http.StripPrefix("/public/", http.FileServer(http.Dir("./public"))))
 
 	// TODO: route "/w" to "/w/" (both of which should route to "/") instead of 404
-	r.Methods("GET").PathPrefix("/w/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/w/" {
-			http.Redirect(w, r, "..", 301)
-			return
-		}
-
-		targetName, err := url.QueryUnescape(r.URL.Path[2:])
-		if err != nil {
-			t.HTML(w, http.StatusInternalServerError, "wiki500", map[string]interface{}{
-				"Title": "Error",
-				"Error": err.Error(),
-			})
-			return
-		}
-
-		store, err := masterStore.Copy()
-		if err != nil {
-			t.HTML(w, http.StatusInternalServerError, "wiki500", map[string]interface{}{
-				"Title": "Error",
-				"Error": err.Error(),
-			})
-			return
-		}
-		defer store.Close()
-
-		doc, err := store.Get(targetName)
-		if _, ok := err.(document.DocumentNotFoundError); ok {
-			t.HTML(w, http.StatusNotFound, "wiki404", map[string]interface{}{
-				"Title": targetName,
-				"Name":  targetName,
-			})
-			return
-		} else if err != nil {
-			t.HTML(w, http.StatusInternalServerError, "wiki500", map[string]interface{}{
-				"Title": "Error",
-				"Error": err.Error(),
-			})
-			return
-		}
-
-		t.HTML(w, http.StatusOK, "wikipage", map[string]interface{}{
-			"Title": doc.Name,
-			"Doc":   doc,
-		})
-	})
+	r.Methods("GET").PathPrefix("/w/").Handler(WikiController{masterStore, renderer})
 
 	http.ListenAndServe(os.Getenv("GOOSE_PORT"), r)
 }
