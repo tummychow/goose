@@ -18,42 +18,36 @@ func (c WikiController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	targetName, err := url.QueryUnescape(r.URL.Path[2:])
-	if err != nil {
-		c.Render.HTML(w, http.StatusInternalServerError, "wiki500", map[string]interface{}{
-			"Title": "Error",
-			"Error": err.Error(),
-		})
-		return
-	}
-
-	store, err := c.Store.Copy()
-	if err != nil {
-		c.Render.HTML(w, http.StatusInternalServerError, "wiki500", map[string]interface{}{
-			"Title": "Error",
-			"Error": err.Error(),
-		})
-		return
-	}
-	defer store.Close()
-
-	doc, err := store.Get(targetName)
-	if _, ok := err.(document.DocumentNotFoundError); ok {
+	doc, err := c.getDocument(r)
+	if docErr, ok := err.(document.DocumentNotFoundError); ok {
 		c.Render.HTML(w, http.StatusNotFound, "wiki404", map[string]interface{}{
-			"Title": targetName,
-			"Name":  targetName,
+			"Title": docErr.Name,
+			"Name":  docErr.Name,
 		})
-		return
 	} else if err != nil {
 		c.Render.HTML(w, http.StatusInternalServerError, "wiki500", map[string]interface{}{
 			"Title": "Error",
 			"Error": err.Error(),
 		})
-		return
+	} else {
+		c.Render.HTML(w, http.StatusOK, "wikipage", map[string]interface{}{
+			"Title": doc.Name,
+			"Doc":   doc,
+		})
+	}
+}
+
+func (c WikiController) getDocument(r *http.Request) (document.Document, error) {
+	store, err := c.Store.Copy()
+	if err != nil {
+		return document.Document{}, err
+	}
+	defer store.Close()
+
+	targetName, err := url.QueryUnescape(r.URL.Path[2:])
+	if err != nil {
+		return document.Document{}, err
 	}
 
-	c.Render.HTML(w, http.StatusOK, "wikipage", map[string]interface{}{
-		"Title": doc.Name,
-		"Doc":   doc,
-	})
+	return store.Get(targetName)
 }
