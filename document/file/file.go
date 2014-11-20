@@ -188,8 +188,7 @@ func (s *FileDocumentStore) Truncate(name string, version time.Time) (int, error
 }
 
 // readDirFiles returns the sorted list of files for the named Document, from
-// oldest to newest. Returns DocumentNotFoundError or InvalidNameError as
-// needed.
+// oldest to newest. Returns NotFoundError or InvalidNameError as needed.
 func (s *FileDocumentStore) readDirFiles(name string) ([]os.FileInfo, error) {
 	if !document.ValidateName(name) {
 		return []os.FileInfo{}, document.InvalidNameError{name}
@@ -199,7 +198,7 @@ func (s *FileDocumentStore) readDirFiles(name string) ([]os.FileInfo, error) {
 	if err != nil {
 		if pathErr, ok := err.(*os.PathError); ok {
 			if pathErr.Err.Error() == "no such file or directory" {
-				return []os.FileInfo{}, document.DocumentNotFoundError{name}
+				return []os.FileInfo{}, document.NotFoundError{name}
 			}
 		}
 		return []os.FileInfo{}, err
@@ -213,7 +212,7 @@ func (s *FileDocumentStore) readDirFiles(name string) ([]os.FileInfo, error) {
 		ret = append(ret, fileinfo)
 	}
 	if len(ret) == 0 {
-		return []os.FileInfo{}, document.DocumentNotFoundError{name}
+		return []os.FileInfo{}, document.NotFoundError{name}
 	}
 	return ret, nil
 }
@@ -230,7 +229,7 @@ func (s *FileDocumentStore) readDocument(name string, target os.FileInfo) (docum
 	if err != nil {
 		if pathErr, ok := err.(*os.PathError); ok {
 			if pathErr.Err.Error() == "no such file or directory" {
-				return document.Document{}, document.DocumentNotFoundError{name}
+				return document.Document{}, document.NotFoundError{name}
 			}
 		}
 		return document.Document{}, err

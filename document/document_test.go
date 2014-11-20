@@ -86,21 +86,21 @@ func (s *DocumentStoreSuite) TearDownSuite(c *check.C) {
 func (s *DocumentStoreSuite) TestEmpty(c *check.C) {
 	_, err := s.Store.Get("/foo/bar")
 	c.Assert(err, check.NotNil)
-	c.Assert(err, check.FitsTypeOf, document.DocumentNotFoundError{})
+	c.Assert(err, check.FitsTypeOf, document.NotFoundError{})
 
 	docAll, err := s.Store.GetAll("/foo/bar")
 	c.Assert(err, check.NotNil)
-	c.Assert(err, check.FitsTypeOf, document.DocumentNotFoundError{})
+	c.Assert(err, check.FitsTypeOf, document.NotFoundError{})
 	c.Assert(docAll, check.HasLen, 0)
 
 	reverts, err := s.Store.Revert("/foo/bar", time.Time{})
 	c.Assert(err, check.NotNil)
-	c.Assert(err, check.FitsTypeOf, document.DocumentNotFoundError{})
+	c.Assert(err, check.FitsTypeOf, document.NotFoundError{})
 	c.Assert(reverts, check.Equals, 0)
 
 	truncates, err := s.Store.Truncate("/foo/bar", time.Time{})
 	c.Assert(err, check.NotNil)
-	c.Assert(err, check.FitsTypeOf, document.DocumentNotFoundError{})
+	c.Assert(err, check.FitsTypeOf, document.NotFoundError{})
 	c.Assert(truncates, check.Equals, 0)
 }
 
@@ -144,12 +144,12 @@ func (s *DocumentStoreSuite) TestBasic(c *check.C) {
 
 	reverts, err = s.Store.Revert("/foo/bar", doc.Timestamp)
 	c.Assert(err, check.NotNil)
-	c.Assert(err, check.FitsTypeOf, document.DocumentNotFoundError{})
+	c.Assert(err, check.FitsTypeOf, document.NotFoundError{})
 	c.Assert(reverts, check.Equals, 0)
 
 	doc, err = s.Store.Get("/foo/bar")
 	c.Assert(err, check.NotNil)
-	c.Assert(err, check.FitsTypeOf, document.DocumentNotFoundError{})
+	c.Assert(err, check.FitsTypeOf, document.NotFoundError{})
 }
 
 func (s *DocumentStoreSuite) TestMultipleVersions(c *check.C) {
@@ -185,7 +185,7 @@ func (s *DocumentStoreSuite) TestMultipleVersions(c *check.C) {
 
 	doc, err = s.Store.Get("/foo/bar")
 	c.Assert(err, check.NotNil)
-	c.Assert(err, check.FitsTypeOf, document.DocumentNotFoundError{})
+	c.Assert(err, check.FitsTypeOf, document.NotFoundError{})
 }
 
 func (s *DocumentStoreSuite) TestMultipleDocuments(c *check.C) {

@@ -22,10 +22,10 @@ const MAX_CONTENT_SIZE = 512 * 1024
 // certain version to save space (discarding older ones).
 //
 // Several methods of the DocumentStore can return errors. Some errors are
-// implementation-agnostic (eg DocumentNotFoundError) and all implementations
-// must use these errors as noted. Any other error value has implementation-
-// specific meaning and can appear at any time, in which case all other return
-// values have implementation-specific meaning as well.
+// implementation-agnostic (eg NotFoundError) and all implementations must use
+// these errors as noted. Any other error value has implementation-specific
+// meaning and can appear at any time, in which case all other return values
+// have implementation-specific meaning as well.
 //
 // DocumentStore requires eventual consistency across a single instance and
 // across all copies thereof. Read-your-writes consistency is useful (required
@@ -61,8 +61,8 @@ type DocumentStore interface {
 	//
 	// If the name is invalid, the error return must be a non-nil
 	// document.InvalidNameError. If the Document does not exist, the error
-	// return must be a non-nil document.DocumentNotFoundError. In either case,
-	// the returned Document has undefined value.
+	// return must be a non-nil document.NotFoundError. In either case, the
+	// returned Document has undefined value.
 	Get(name string) (Document, error)
 
 	// Returns all versions of the Document specified by name, in order from
@@ -70,8 +70,8 @@ type DocumentStore interface {
 	//
 	// If the name is invalid, the error return must be a non-nil
 	// document.InvalidNameError. If the Document does not exist, the error
-	// return must be a non-nil document.DocumentNotFoundError. In either case,
-	// the returned slice must be empty.
+	// return must be a non-nil document.NotFoundError. In either case, the
+	// returned slice must be empty.
 	GetAll(name string) ([]Document, error)
 
 	// Creates a new version of the Document specified by name, containing the
@@ -85,7 +85,7 @@ type DocumentStore interface {
 	//
 	// A DocumentStore must support at least document.MAX_CONTENT_SIZE bytes of
 	// content as an argument to this function. Passing a larger string must
-	// return a non-nil DocumentTooLargeError.
+	// return a non-nil ContentTooLargeError.
 	//
 	// If the name is invalid, the error return must be a non-nil
 	// document.InvalidNameError.
@@ -104,9 +104,9 @@ type DocumentStore interface {
 	// its oldest version (or any earlier time).
 	//
 	// Reverting a Document that does not exist must have no effect. The
-	// returns must be zero, and a non-nil document.DocumentNotFoundError.
-	// Similarly, invoking Revert with an invalid name returns zero, and a
-	// non-nil document.InvalidNameError.
+	// returns must be zero, and a non-nil document.NotFoundError. Similarly,
+	// invoking Revert with an invalid name returns zero, and a non-nil
+	// document.InvalidNameError.
 	Revert(name string, timestamp time.Time) (int, error)
 
 	// Truncates history for the Document specified by name, to the specified
@@ -122,9 +122,9 @@ type DocumentStore interface {
 	// of its newest version (or any later time).
 	//
 	// Truncating a Document that does not exist must have no effect. The
-	// returns must be zero, and a non-nil document.DocumentNotFoundError.
-	// Similarly, invoking Truncate with an invalid name returns zero, and a
-	// non-nil document.InvalidNameError.
+	// returns must be zero, and a non-nil document.NotFoundError. Similarly,
+	// invoking Truncate with an invalid name returns zero, and a non-nil
+	// document.InvalidNameError.
 	Truncate(name string, timestamp time.Time) (int, error)
 
 	// Returns a new DocumentStore instance that uses the same underlying
@@ -188,14 +188,14 @@ type Document struct {
 	Timestamp time.Time
 }
 
-// DocumentNotFoundError is the error returned by a DocumentStore when an
-// operation is attempted against a Document that does not exist.
-type DocumentNotFoundError struct {
+// NotFoundError is the error returned by a DocumentStore when an operation is
+// attempted against a Document that does not exist.
+type NotFoundError struct {
 	// Name is the Name of the nonexistent Document that caused the error.
 	Name string
 }
 
-func (e DocumentNotFoundError) Error() string {
+func (e NotFoundError) Error() string {
 	return fmt.Sprintf("goose/document: document %q not found", e.Name)
 }
 
@@ -218,12 +218,12 @@ func (e ClosedError) Error() string {
 	return string(e)
 }
 
-// DocumentTooLargeError is the error returned when a Document has too much
+// ContentTooLargeError is the error returned when a Document has too much
 // content, exceeding document.MAX_CONTENT_SIZE.
-type DocumentTooLargeError struct {
+type ContentTooLargeError struct {
 	Size int
 }
 
-func (e DocumentTooLargeError) Error() string {
+func (e ContentTooLargeError) Error() string {
 	return fmt.Sprintf("goose/document: content is %v bytes (%v bytes too long)", e.Size, e.Size-MAX_CONTENT_SIZE)
 }

@@ -33,7 +33,7 @@ func main() {
 	masterStore := initializeStore()
 	defer masterStore.Close()
 	_, err := masterStore.Get("/foo/bar")
-	if _, ok := err.(document.DocumentNotFoundError); ok {
+	if _, ok := err.(document.NotFoundError); ok {
 		masterStore.Update("/foo/bar", "#supdawg\nWelcome to the page **foo bar**\n```javascript\nvar foo = require('bar');\n```")
 	}
 
