@@ -90,7 +90,12 @@ gulp.task('default', function() {
     online: false,
     open: false,
   });
-  gooseproc.on('restart', browsersync.reload);
+  gooseproc.on('restart', function() {
+    // brief delay to allow the goose binary to begin listening
+    // fixes some sporadic connection reset issues where you issue a reload
+    // and the browser gets stuck waiting for goose to respond
+    setTimeout(browsersync.reload, 100);
+  });
 
   gulp.watch('js/*.js', ['js']);
   gulp.watch('css/*.css', ['css']);
