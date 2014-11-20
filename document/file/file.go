@@ -107,6 +107,11 @@ func (s *FileDocumentStore) GetAll(name string) ([]document.Document, error) {
 }
 
 func (s *FileDocumentStore) Update(name, content string) (int, error) {
+	// Update has to check the name before attempting to write the file
+	if !document.ValidateName(name) {
+		return 0, document.InvalidNameError{name}
+	}
+
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -183,8 +188,13 @@ func (s *FileDocumentStore) Truncate(name string, version time.Time) (int, error
 }
 
 // readDirFiles returns the sorted list of files for the named Document, from
-// oldest to newest. Returns DocumentNotFoundError as needed.
+// oldest to newest. Returns DocumentNotFoundError or InvalidNameError as
+// needed.
 func (s *FileDocumentStore) readDirFiles(name string) ([]os.FileInfo, error) {
+	if !document.ValidateName(name) {
+		return []os.FileInfo{}, document.InvalidNameError{name}
+	}
+
 	docdir, err := ioutil.ReadDir(filepath.Join(s.root, name))
 	if err != nil {
 		if pathErr, ok := err.(*os.PathError); ok {
@@ -208,7 +218,9 @@ func (s *FileDocumentStore) readDirFiles(name string) ([]os.FileInfo, error) {
 	return ret, nil
 }
 
-// readDocument takes a single file and unmarshals it into a Document.
+// readDocument takes a single file and unmarshals it into a Document. It does
+// not perform name validation, since the target file should be obtained from
+// readDirFiles (which does the name validation for you).
 func (s *FileDocumentStore) readDocument(name string, target os.FileInfo) (document.Document, error) {
 	timestamp, err := time.Parse(fileTimeFormat, target.Name())
 	if err != nil {

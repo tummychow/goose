@@ -59,17 +59,19 @@ const MAX_CONTENT_SIZE = 512 * 1024
 type DocumentStore interface {
 	// Returns the Document specified by name, at its newest version.
 	//
-	// If the Document does not exist, the error return must be a non-nil
-	// document.DocumentNotFoundError. In that case, the returned Document has
-	// undefined value.
+	// If the name is invalid, the error return must be a non-nil
+	// document.InvalidNameError. If the Document does not exist, the error
+	// return must be a non-nil document.DocumentNotFoundError. In either case,
+	// the returned Document has undefined value.
 	Get(name string) (Document, error)
 
 	// Returns all versions of the Document specified by name, in order from
 	// newest (index 0) to oldest (index n-1).
 	//
-	// If the Document does not exist, the error return must be a non-nil
-	// document.DocumentNotFoundError. In that case, the returned slice must be
-	// empty.
+	// If the name is invalid, the error return must be a non-nil
+	// document.InvalidNameError. If the Document does not exist, the error
+	// return must be a non-nil document.DocumentNotFoundError. In either case,
+	// the returned slice must be empty.
 	GetAll(name string) ([]Document, error)
 
 	// Creates a new version of the Document specified by name, containing the
@@ -84,6 +86,9 @@ type DocumentStore interface {
 	// A DocumentStore must support at least document.MAX_CONTENT_SIZE bytes of
 	// content as an argument to this function. Passing a larger string must
 	// return a non-nil DocumentTooLargeError.
+	//
+	// If the name is invalid, the error return must be a non-nil
+	// document.InvalidNameError.
 	Update(name, content string) (int, error)
 
 	// Reverts the Document specified by name, to the specified time. All
@@ -100,6 +105,8 @@ type DocumentStore interface {
 	//
 	// Reverting a Document that does not exist must have no effect. The
 	// returns must be zero, and a non-nil document.DocumentNotFoundError.
+	// Similarly, invoking Revert with an invalid name returns zero, and a
+	// non-nil document.InvalidNameError.
 	Revert(name string, timestamp time.Time) (int, error)
 
 	// Truncates history for the Document specified by name, to the specified
@@ -116,6 +123,8 @@ type DocumentStore interface {
 	//
 	// Truncating a Document that does not exist must have no effect. The
 	// returns must be zero, and a non-nil document.DocumentNotFoundError.
+	// Similarly, invoking Truncate with an invalid name returns zero, and a
+	// non-nil document.InvalidNameError.
 	Truncate(name string, timestamp time.Time) (int, error)
 
 	// Returns a new DocumentStore instance that uses the same underlying
@@ -188,6 +197,17 @@ type DocumentNotFoundError struct {
 
 func (e DocumentNotFoundError) Error() string {
 	return fmt.Sprintf("goose/document: document %q not found", e.Name)
+}
+
+// InvalidNameError is the error returned by a DocumentStore when an operation
+// is invoked with a Document Name that is not actually valid. (Refer to
+// Document.Name for details on what constitutes a valid Name.)
+type InvalidNameError struct {
+	Name string
+}
+
+func (e InvalidNameError) Error() string {
+	return fmt.Sprintf("goose/document: name %q is invalid", e.Name)
 }
 
 // ClosedError is the error returned when a method call is invoked on a

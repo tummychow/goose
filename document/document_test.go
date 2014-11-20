@@ -104,6 +104,31 @@ func (s *DocumentStoreSuite) TestEmpty(c *check.C) {
 	c.Assert(truncates, check.Equals, 0)
 }
 
+func (s *DocumentStoreSuite) TestInvalidNames(c *check.C) {
+	_, err := s.Store.Get("/foo/bar/")
+	c.Assert(err, check.NotNil)
+	c.Assert(err, check.FitsTypeOf, document.InvalidNameError{})
+
+	docAll, err := s.Store.GetAll("/foo/bar/")
+	c.Assert(err, check.NotNil)
+	c.Assert(err, check.FitsTypeOf, document.InvalidNameError{})
+	c.Assert(docAll, check.HasLen, 0)
+
+	_, err = s.Store.Update("/foo/bar/", "foo bar")
+	c.Assert(err, check.NotNil)
+	c.Assert(err, check.FitsTypeOf, document.InvalidNameError{})
+
+	reverts, err := s.Store.Revert("/foo/bar/", time.Time{})
+	c.Assert(err, check.NotNil)
+	c.Assert(err, check.FitsTypeOf, document.InvalidNameError{})
+	c.Assert(reverts, check.Equals, 0)
+
+	truncates, err := s.Store.Truncate("/foo/bar/", time.Time{})
+	c.Assert(err, check.NotNil)
+	c.Assert(err, check.FitsTypeOf, document.InvalidNameError{})
+	c.Assert(truncates, check.Equals, 0)
+}
+
 func (s *DocumentStoreSuite) TestBasic(c *check.C) {
 	ver, err := s.Store.Update("/foo/bar", "foo bar")
 	c.Assert(err, check.IsNil)
