@@ -51,9 +51,6 @@ func (checker *documentChecker) Check(params []interface{}, names []string) (res
 	if doc.Timestamp.Location() != time.UTC {
 		return false, "obtained Document has non-UTC Timestamp"
 	}
-	if doc.Source == nil {
-		return false, "obtained Document has nil Source"
-	}
 
 	if params[1] != nil {
 		expectedName, ok := params[1].(string)

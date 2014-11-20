@@ -227,6 +227,5 @@ func (s *FileDocumentStore) readDocument(name string, target os.FileInfo) (docum
 		Name:      name,
 		Content:   string(content),
 		Timestamp: timestamp,
-		Source:    s,
 	}, nil
 }

@@ -179,10 +179,6 @@ type Document struct {
 	// approximately reflects when Update was called to add this Document to
 	// the DocumentStore.
 	Timestamp time.Time
-
-	// Source is the DocumentStore from which this Document originated. It must
-	// be either the exact instance of that DocumentStore, or a copy thereof.
-	Source DocumentStore
 }
 
 // DocumentNotFoundError is the error returned by a DocumentStore when an
