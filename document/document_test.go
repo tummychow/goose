@@ -1,6 +1,7 @@
 package document_test
 
 import (
+	"fmt"
 	"github.com/tummychow/goose/document"
 	_ "github.com/tummychow/goose/document/file"
 	"gopkg.in/check.v1"
@@ -24,9 +25,11 @@ func init() {
 	if len(os.Getenv("GOOSE_TEST_FILE")) != 0 {
 		fileStore, err := document.NewStore(os.Getenv("GOOSE_TEST_FILE"))
 		if err != nil {
-			panic(err)
+			fmt.Printf("Could not initialize FileDocumentStore %q, skipping\n(error was: %v)\n", os.Getenv("GOOSE_TEST_FILE"), err)
+		} else {
+			fmt.Printf("Running tests against FileDocumentStore %q\n", os.Getenv("GOOSE_TEST_FILE"))
+			check.Suite(&DocumentStoreSuite{Store: fileStore})
 		}
-		check.Suite(&DocumentStoreSuite{Store: fileStore})
 	}
 }
 

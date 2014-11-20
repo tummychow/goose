@@ -44,7 +44,7 @@ function spawntask(cmdargs) {
 
 gulp.task('go', spawntask(['go', 'build', '-o', 'goose']));
 
-gulp.task('test', spawntask(['go', 'test', './...']));
+gulp.task('test', spawntask(['go', 'test', './...', '-test.v', '-check.v']));
 
 gulp.task('css', function() {
   // minifyCss does not support sourcemaps, see jakubpawlowicz/clean-css#125
