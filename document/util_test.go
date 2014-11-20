@@ -13,49 +13,27 @@ type UtilSuite struct{}
 var _ = check.Suite(&UtilSuite{})
 
 var namesTable = []struct {
-	Name     string
-	Segments []string
+	Name  string
+	Valid bool
 }{
-	{"/Foo/Bar/Baz", []string{"Foo", "Bar", "Baz"}},
-	{"/base/o(n)/10%/val Foo", []string{"base", "o(n)", "10%", "val Foo"}},
-	{"/<>,.?;:'\"[]{}/\\|=+-_`~/!@#$%^&*()", []string{"<>,.?;:'\"[]{}", "\\|=+-_`~", "!@#$%^&*()"}},
-	{"/", []string{}},
-	{"Foo/Bar", []string{}},
-	{"/Foo/Bar/", []string{}},
-	{"", []string{}},
-	{"/Foo//Bar", []string{}},
-	{"/世/界/Bar", []string{}},
-	{"/./Bar", []string{}},
-	{"/Bar/.", []string{}},
-	{"/Bar/..", []string{}},
-	{"/../Bar", []string{}},
-	{"/.../Bar", []string{"...", "Bar"}},
+	{"/Foo/Bar/Baz", true},
+	{"/base/o(n)/10%/val Foo", true},
+	{"/<>,.?;:'\"[]{}/\\|=+-_`~/!@#$%^&*()", true},
+	{"/", false},
+	{"Foo/Bar", false},
+	{"/Foo/Bar/", false},
+	{"", false},
+	{"/Foo//Bar", false},
+	{"/世/界/Bar", false},
+	{"/./Bar", false},
+	{"/Bar/.", false},
+	{"/Bar/..", false},
+	{"/../Bar", false},
+	{"/.../Bar", true},
 }
 
-func (s *UtilSuite) TestNameToSegments(c *check.C) {
+func (s *UtilSuite) TestNameValidation(c *check.C) {
 	for _, entry := range namesTable {
-		c.Check(document.NameToSegments(entry.Name), check.DeepEquals, entry.Segments, check.Commentf("Name: %#v", entry.Name))
-	}
-}
-
-var segmentsTable = []struct {
-	Segments []string
-	Name     string
-}{
-	{[]string{"Foo", "Bar", "Baz"}, "/Foo/Bar/Baz"},
-	{[]string{"base", "o(n)", "10%", "val Foo"}, "/base/o(n)/10%/val Foo"},
-	{[]string{"<>,.?;:'\"[]{}", "\\|=+-_`~", "!@#$%^&*()"}, "/<>,.?;:'\"[]{}/\\|=+-_`~/!@#$%^&*()"},
-	{[]string{}, ""},
-	{[]string{"Bar", ""}, ""},
-	{[]string{"世", "界", "Bar"}, ""},
-	{[]string{"either/or", "one/theother", "foo"}, ""},
-	{[]string{".", "foo"}, ""},
-	{[]string{"..", "foo"}, ""},
-	{[]string{"...", "foo"}, "/.../foo"},
-}
-
-func (s *UtilSuite) TestSegmentsToName(c *check.C) {
-	for _, entry := range segmentsTable {
-		c.Check(document.SegmentsToName(entry.Segments), check.DeepEquals, entry.Name, check.Commentf("Segments: %#v", entry.Segments))
+		c.Check(document.ValidateName(entry.Name), check.DeepEquals, entry.Valid, check.Commentf("Name: %#v", entry.Name))
 	}
 }

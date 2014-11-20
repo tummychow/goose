@@ -151,12 +151,10 @@ type Document struct {
 	// DocumentStore. A Name is unique across a DocumentStore instance and its
 	// copies (ignoring versions).
 	//
-	// The format of Name is a nonempty sequence of strings called segments.
-	// Every segment is composed entirely of printable ACII characters, ie 0x20
-	// to 0x7E, and segments may not contain forward slashes (0x2F). Every
-	// segment is nonempty. In addition, no segment may equal the string "." or
-	// "..". The Name is then formed by prepending a slash to every segment and
-	// concatenating them in order.
+	// The format of Name is a nonempty sequence of segments. Each segment
+	// consists of a slash, followed by at least one non-slash printable ASCII
+	// character (ie any character in the range \x20-\x2E or \x30-\x7E).
+	// Furthermore, a segment may not be the strings "/." or "/..".
 	//
 	// The Name is part of the URL used to access the Document. However, do not
 	// %-encode the characters of the Name. In addition, the last slash-

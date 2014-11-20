@@ -42,7 +42,7 @@ func (checker *documentChecker) Check(params []interface{}, names []string) (res
 		return false, "obtained value is not a Document"
 	}
 
-	if len(document.NameToSegments(doc.Name)) == 0 {
+	if !document.ValidateName(doc.Name) {
 		return false, "obtained Document has invalid Name"
 	}
 	if len([]byte(doc.Content)) >= document.MAX_CONTENT_SIZE {
