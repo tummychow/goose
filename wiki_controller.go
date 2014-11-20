@@ -5,6 +5,7 @@ import (
 	"gopkg.in/unrolled/render.v1"
 	"net/http"
 	"net/url"
+	"path"
 )
 
 type WikiController struct {
@@ -43,6 +44,10 @@ func (c WikiController) getDocument(r *http.Request) (document.Document, error) 
 	if err != nil {
 		return document.Document{}, err
 	}
+	// gorilla invokes path.Clean already but it restores trailing slashes,
+	// and we need to remove those
+	// https://github.com/gorilla/mux/blob/master/mux.go#L69
+	targetName = path.Clean(targetName)
 
 	return store.Get(targetName)
 }
