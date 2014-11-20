@@ -14,21 +14,23 @@ type WikiController struct {
 }
 
 func (c WikiController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	doc, err := c.getDocument(r)
-	if docErr, ok := err.(document.NotFoundError); ok {
-		c.Render.HTML(w, http.StatusNotFound, "wiki404", map[string]interface{}{
-			"Title": docErr.Name,
-			"Name":  docErr.Name,
-		})
-	} else if err != nil {
-		c.Render.HTML(w, http.StatusInternalServerError, "wiki500", map[string]interface{}{
-			"Title": "Error",
-			"Error": err.Error(),
-		})
-	} else {
+	doc, unknownErr := c.getDocument(r)
+
+	switch err := unknownErr.(type) {
+	case nil:
 		c.Render.HTML(w, http.StatusOK, "wikipage", map[string]interface{}{
 			"Title": doc.Name,
 			"Doc":   doc,
+		})
+	case document.NotFoundError:
+		c.Render.HTML(w, http.StatusNotFound, "wiki404", map[string]interface{}{
+			"Title": err.Name,
+			"Name":  err.Name,
+		})
+	default:
+		c.Render.HTML(w, http.StatusInternalServerError, "wiki500", map[string]interface{}{
+			"Title": "Error",
+			"Error": err.Error(),
 		})
 	}
 }
