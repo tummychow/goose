@@ -45,11 +45,8 @@ func main() {
 	r := mux.NewRouter()
 	r.StrictSlash(false)
 
-	// TODO: route "/public" to "/public/" instead of 404
-	r.Methods("GET").PathPrefix("/public/").Handler(http.StripPrefix("/public/", http.FileServer(http.Dir("./public"))))
-
-	// TODO: route "/w" to "/w/" (both of which should route to "/") instead of 404
-	r.Methods("GET").PathPrefix("/w/").Handler(WikiController{masterStore, renderer})
+	r.Methods("GET").Path("/public{_:/.*|$}").Handler(http.StripPrefix("/public", http.FileServer(http.Dir("./public"))))
+	r.Methods("GET").Path("/w{_:/.+}").Handler(WikiController{masterStore, renderer})
 
 	http.ListenAndServe(os.Getenv("GOOSE_PORT"), r)
 }
