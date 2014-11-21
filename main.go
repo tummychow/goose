@@ -46,7 +46,7 @@ func main() {
 	r.StrictSlash(false)
 
 	r.Methods("GET").Path("/public{_:/.*|$}").Handler(http.StripPrefix("/public", http.FileServer(http.Dir("./public"))))
-	r.Methods("GET").Path("/w{_:/.+}").Handler(WikiController{masterStore, renderer})
+	r.Methods("GET", "POST").Path("/w{_:/.+}").Handler(WikiController{masterStore, renderer})
 
 	http.ListenAndServe(os.Getenv("GOOSE_PORT"), r)
 }

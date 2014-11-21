@@ -14,7 +14,7 @@ type WikiController struct {
 }
 
 func (c WikiController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	doc, unknownErr := c.getDocument(r)
+	doc, unknownErr := c.handleDocument(r)
 
 	switch err := unknownErr.(type) {
 	case nil:
@@ -35,7 +35,7 @@ func (c WikiController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (c WikiController) getDocument(r *http.Request) (document.Document, error) {
+func (c WikiController) handleDocument(r *http.Request) (document.Document, error) {
 	store, err := c.Store.Copy()
 	if err != nil {
 		return document.Document{}, err
@@ -50,6 +50,13 @@ func (c WikiController) getDocument(r *http.Request) (document.Document, error) 
 	// and we need to remove those
 	// https://github.com/gorilla/mux/blob/master/mux.go#L69
 	targetName = path.Clean(targetName)
+
+	if newContent := r.PostFormValue("content"); len(newContent) > 0 {
+		_, err = store.Update(targetName, newContent)
+		if err != nil {
+			return document.Document{}, err
+		}
+	}
 
 	return store.Get(targetName)
 }
