@@ -38,7 +38,6 @@ func main() {
 	}
 
 	renderer := render.New(render.Options{
-		Layout:        "layout",
 		IsDevelopment: len(os.Getenv("GOOSE_DEV")) != 0,
 	})
 

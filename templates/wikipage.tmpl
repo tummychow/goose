@@ -1,14 +1,16 @@
-<body>
-  <nav class="nav">
-    <div class="container">
-      <a class="pagename current">{{ .Doc.Name }}</a>
-      <a href="/">Home</a>
-      <a href="#">Edit</a>
-      <a href="#">History</a>
-    </div>
-  </nav>
+<!doctype html>
+<html lang="en-US">
+  {{ template "head" . }}
+  <body>
+    <nav class="nav">
+      <div class="container">
+        <a class="pagename current">{{ .Doc.Name }}</a>
+        <a href="/">Home</a>
+        <a href="#">Edit</a>
+      </div>
+    </nav>
 
-  <div class="container" id="md" data-md="{{ .Doc.Content }}"></div>
-
-  <script data-manual src="/public/main.js"></script>
-</body>
+    <div class="container" id="md" data-md="{{ .Doc.Content }}"></div>
+    <script data-manual src="/public/main.js"></script>
+  </body>
+</html>
