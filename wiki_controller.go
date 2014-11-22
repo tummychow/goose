@@ -18,10 +18,7 @@ func (c WikiController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	switch err := unknownErr.(type) {
 	case nil:
-		c.Render.HTML(w, http.StatusOK, "wikipage", map[string]interface{}{
-			"Title": doc.Name,
-			"Doc":   doc,
-		})
+		c.Render.HTML(w, http.StatusOK, "wikipage", doc)
 	case document.NotFoundError:
 		c.Render.HTML(w, http.StatusNotFound, "wiki404", map[string]interface{}{
 			"Title": err.Name,
