@@ -1,4 +1,16 @@
-<body>
-  <h1>Error</h1>
-  <pre>{{ .Error }}</pre>
-</body>
+<!doctype html>
+<html lang="en-US">
+  {{ template "head" "500 Error" }}
+  <body>
+    <nav class="nav">
+      <div class="container">
+        <a class="pagename current" href="/">Goose</a>
+      </div>
+    </nav>
+
+    <div class="container">
+      <h1>500 Error</h1>
+      <pre>{{ . }}</pre>
+    </div>
+  </body>
+</html>

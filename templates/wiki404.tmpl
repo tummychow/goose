@@ -1,3 +1,18 @@
-<body>
-  <strong>{{ .Name }}</strong> does not exist.
-</body>
+<!doctype html>
+<html lang="en-US">
+  {{ template "head" . }}
+  <body>
+    <nav class="nav">
+      <div class="container">
+        <a class="pagename current">{{ . }}</a>
+        <a href="/">Home</a>
+        <a href="#">Edit</a>
+      </div>
+    </nav>
+
+    <div class="container">
+      <h1>{{ . }}</h1>
+      This document doesn't exist.
+    </div>
+  </body>
+</html>

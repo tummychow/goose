@@ -20,15 +20,9 @@ func (c WikiController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case nil:
 		c.Render.HTML(w, http.StatusOK, "wikipage", doc)
 	case document.NotFoundError:
-		c.Render.HTML(w, http.StatusNotFound, "wiki404", map[string]interface{}{
-			"Title": err.Name,
-			"Name":  err.Name,
-		})
+		c.Render.HTML(w, http.StatusNotFound, "wiki404", err.Name)
 	default:
-		c.Render.HTML(w, http.StatusInternalServerError, "wiki500", map[string]interface{}{
-			"Title": "Error",
-			"Error": err.Error(),
-		})
+		c.Render.HTML(w, http.StatusInternalServerError, "wiki500", err.Error())
 	}
 }
 
