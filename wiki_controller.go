@@ -42,6 +42,17 @@ func (c WikiController) Edit(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (c WikiController) Save(w http.ResponseWriter, r *http.Request) {
+	doc, unknownErr := c.handleDocument(r)
+
+	switch err := unknownErr.(type) {
+	case nil:
+		http.Redirect(w, r, "/w"+doc.Name, http.StatusMovedPermanently)
+	default:
+		c.Render.HTML(w, http.StatusInternalServerError, "wiki500", err.Error())
+	}
+}
+
 func (c WikiController) handleDocument(r *http.Request) (document.Document, error) {
 	store, err := c.Store.Copy()
 	if err != nil {

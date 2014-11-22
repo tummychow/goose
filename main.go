@@ -37,17 +37,18 @@ func main() {
 		IsDevelopment: len(os.Getenv("GOOSE_DEV")) != 0,
 	})
 
-	wcon := WikiController{
-		Store:  masterStore,
-		Render: renderer,
-	}
-
 	r := mux.NewRouter()
 	r.StrictSlash(false)
 
 	r.Methods("GET").Path("/public{_:/.*|$}").Handler(http.StripPrefix("/public", http.FileServer(http.Dir("./public"))))
+
+	wcon := WikiController{
+		Store:  masterStore,
+		Render: renderer,
+	}
 	r.Methods("GET", "POST").Path("/w{_:/.+}").HandlerFunc(wcon.Show)
 	r.Methods("GET").Path("/e{_:/.+}").HandlerFunc(wcon.Edit)
+	r.Methods("POST").Path("/e{_:/.+}").HandlerFunc(wcon.Save)
 
 	http.ListenAndServe(os.Getenv("GOOSE_PORT"), r)
 }
