@@ -32,10 +32,6 @@ func initializeStore() document.DocumentStore {
 func main() {
 	masterStore := initializeStore()
 	defer masterStore.Close()
-	_, err := masterStore.Get("/foo/bar")
-	if _, ok := err.(document.NotFoundError); ok {
-		masterStore.Update("/foo/bar", "#supdawg\nWelcome to the page **foo bar**\n```javascript\nvar foo = require('bar');\n```")
-	}
 
 	renderer := render.New(render.Options{
 		IsDevelopment: len(os.Getenv("GOOSE_DEV")) != 0,
@@ -51,6 +47,7 @@ func main() {
 
 	r.Methods("GET").Path("/public{_:/.*|$}").Handler(http.StripPrefix("/public", http.FileServer(http.Dir("./public"))))
 	r.Methods("GET", "POST").Path("/w{_:/.+}").HandlerFunc(wcon.Show)
+	r.Methods("GET").Path("/e{_:/.+}").HandlerFunc(wcon.Edit)
 
 	http.ListenAndServe(os.Getenv("GOOSE_PORT"), r)
 }

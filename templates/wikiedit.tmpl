@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en-US">
+  {{ template "head" .Name }}
+  <body>
+    <nav class="nav">
+      <div class="container">
+        <a class="pagename current">{{ .Name }}</a>
+        <a href="/">Home</a>
+        <a href="/w{{ .Name }}">Back</a>
+      </div>
+    </nav>
+
+    <div class="container">
+      <form method="post" action="/w{{ .Name }}" enctype="application/x-www-form-urlencoded">
+        <p><textarea name="content">{{ .Content }}</textarea></p>
+        <p><button type="submit">Save</button></p>
+      </form>
+    </div>
+  </body>
+</html>

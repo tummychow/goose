@@ -26,6 +26,22 @@ func (c WikiController) Show(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (c WikiController) Edit(w http.ResponseWriter, r *http.Request) {
+	doc, unknownErr := c.handleDocument(r)
+
+	switch err := unknownErr.(type) {
+	case nil:
+		c.Render.HTML(w, http.StatusOK, "wikiedit", doc)
+	case document.NotFoundError:
+		c.Render.HTML(w, http.StatusNotFound, "wikiedit", map[string]string{
+			"Name":    err.Name,
+			"Content": "",
+		})
+	default:
+		c.Render.HTML(w, http.StatusInternalServerError, "wiki500", err.Error())
+	}
+}
+
 func (c WikiController) handleDocument(r *http.Request) (document.Document, error) {
 	store, err := c.Store.Copy()
 	if err != nil {
