@@ -13,7 +13,7 @@ type WikiController struct {
 	Render *render.Render
 }
 
-func (c WikiController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (c WikiController) Show(w http.ResponseWriter, r *http.Request) {
 	doc, unknownErr := c.handleDocument(r)
 
 	switch err := unknownErr.(type) {
