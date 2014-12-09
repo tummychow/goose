@@ -30,6 +30,8 @@ $ gulp # run dev server
 
 This launches the development server, which watches your JS, CSS and Go files (but you still have to run the tasks manually the first time because the compiled files don't exist yet). The server uses browsersync so you don't have to press F5 a hundred times to be productive. There are a few other gulp tasks implemented or in the works, but the only one you need to know for hacking is the default task.
 
+At the moment, goose does not require any dependency management. I use gpm internally, but at the moment, goose's dependencies are all stable enough that I don't feel the need to implement anything more than `go get`. Future dependency management functions may be integrated into the gulpfile, or I might just use godep.
+
 ## Usage
 
 Right now the application is very bare-bones, but it does actually do the basic jobs of a wiki (reading and writing pages). The route `/w/foo/bar` will take you to the page `/foo/bar`, while `/e/foo/bar` lets you edit or create that page. Rendering is done client-side in JS; commonmark compliance via [remarkable](https://github.com/jonschlinkert/remarkable) is on the roadmap but not really important atm.
