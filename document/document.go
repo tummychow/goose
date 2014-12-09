@@ -17,9 +17,7 @@ const MAX_CONTENT_SIZE = 512 * 1024
 // DocumentStore stores Documents in a Name-addressable store with immutable
 // versions. Modifying a given Document never edits or overwrites the current
 // version - instead, a new version is always created. Versions are identified
-// and ordered by timestamp. For maintenance, a Document can be reverted to an
-// older version (discarding newer ones), or its history can be truncated to a
-// certain version to save space (discarding older ones).
+// and ordered by timestamp.
 //
 // Several methods of the DocumentStore can return errors. Some errors are
 // implementation-agnostic (eg NotFoundError) and all implementations must use
