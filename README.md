@@ -4,7 +4,7 @@ Simple markdown wiki with Go backend. Written for personal use, so there is a st
 
 ## Installation
 
-Technically Goose has no runtime dependencies (at the moment it doesn't even support databases, just flat files, so you don't need a db server), but I can't be bothered to make a binary distribution or tarball. I do not package the compiled frontend assets or binary, so you will need a variety of tools to build or hack on goose:
+Technically Goose has no runtime dependencies (at the moment it doesn't even support databases, just flat files, so you don't need a db server), but I can't be bothered to make a binary distribution or tarball. I do not package the compiled frontend assets or binary, so you will need a variety of tools to build or hack on Goose:
 
 - go 1.3+ with proper `GOPATH` setup and so on
 - node.js 0.10.x
@@ -30,7 +30,7 @@ $ gulp # run dev server
 
 This launches the development server, which watches your JS, CSS and Go files (but you still have to run the tasks manually the first time because the compiled files don't exist yet). The server uses browsersync so you don't have to press F5 a hundred times to be productive. There are a few other gulp tasks implemented or in the works, but the only one you need to know for hacking is the default task.
 
-At the moment, goose does not require any dependency management. I use gpm internally, but at the moment, goose's dependencies are all stable enough that I don't feel the need to implement anything more than `go get`. Future dependency management functions may be integrated into the gulpfile, or I might just use godep.
+At the moment, Goose does not require any dependency management. I use gpm internally, but at the moment, Goose's dependencies are all stable enough that I don't feel the need to implement anything more than `go get`. Future dependency management functions may be integrated into the gulpfile, or I might just use godep.
 
 ## Usage
 
