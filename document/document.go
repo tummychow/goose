@@ -83,8 +83,11 @@ type DocumentStore interface {
 	// existing Document.
 	//
 	// A DocumentStore must support at least document.MAX_CONTENT_SIZE bytes of
-	// content as an argument to this function. Passing a larger string must
-	// return a non-nil ContentTooLargeError.
+	// content as an argument to this function. Passing a larger string may
+	// return a non-nil ContentTooLargeError. However, if a DocumentStore does
+	// accept content over that size, it must also be capable of retrieving and
+	// returning that content. A DocumentStore should not truncate content over
+	// the size limit.
 	//
 	// If the name is invalid, the error return must be a non-nil
 	// document.InvalidNameError.
