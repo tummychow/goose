@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/tummychow/goose/document"
 	_ "github.com/tummychow/goose/document/file"
+	_ "github.com/tummychow/goose/document/sql"
 	"gopkg.in/check.v1"
 	"os"
 	"time"
@@ -29,6 +30,16 @@ func init() {
 		} else {
 			fmt.Printf("Running tests against FileDocumentStore %q\n", os.Getenv("GOOSE_TEST_FILE"))
 			check.Suite(&DocumentStoreSuite{Store: fileStore})
+		}
+	}
+
+	if len(os.Getenv("GOOSE_TEST_SQL")) != 0 {
+		sqlStore, err := document.NewStore(os.Getenv("GOOSE_TEST_SQL"))
+		if err != nil {
+			fmt.Printf("Could not initialize SqlDocumentStore %q, skipping\n(error was: %v)\n", os.Getenv("GOOSE_TEST_SQL"), err)
+		} else {
+			fmt.Printf("Running tests against SqlDocumentStore %q\n", os.Getenv("GOOSE_TEST_SQL"))
+			check.Suite(&DocumentStoreSuite{Store: sqlStore})
 		}
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/tummychow/goose/document"
 	_ "github.com/tummychow/goose/document/file"
+	_ "github.com/tummychow/goose/document/sql"
 	"gopkg.in/unrolled/render.v1"
 	"net/http"
 	"os"
