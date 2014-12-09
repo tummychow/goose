@@ -78,9 +78,7 @@ func (checker *documentChecker) Check(params []interface{}, names []string) (res
 }
 
 func (s *DocumentStoreSuite) SetUpTest(c *check.C) {
-	s.Store.Revert("/foo", time.Time{})
-	s.Store.Revert("/foo/bar", time.Time{})
-	s.Store.Revert("/foo/bar/baz", time.Time{})
+	s.Store.Clear()
 }
 func (s *DocumentStoreSuite) TearDownSuite(c *check.C) {
 	s.Store.Close()
