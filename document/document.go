@@ -75,9 +75,8 @@ type DocumentStore interface {
 	GetAll(name string) ([]Document, error)
 
 	// Creates a new version of the Document specified by name, containing the
-	// specified content. The int return is the version number of the created
-	// Document. The Timestamp of the created version is determined by the
-	// DocumentStore.
+	// specified content. The Timestamp of the created version is determined by
+	// the DocumentStore.
 	//
 	// Update can be invoked for Documents that do not exist, in which case the
 	// first version is created. Update never modifies an old version of an
@@ -89,7 +88,7 @@ type DocumentStore interface {
 	//
 	// If the name is invalid, the error return must be a non-nil
 	// document.InvalidNameError.
-	Update(name, content string) (int, error)
+	Update(name, content string) error
 
 	// Clear deletes all versions of all Documents in this DocumentStore. This
 	// operation is highly destructive, and is primarily intended for tests.

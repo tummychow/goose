@@ -105,15 +105,14 @@ func (s *DocumentStoreSuite) TestInvalidNames(c *check.C) {
 	c.Assert(err, check.FitsTypeOf, document.InvalidNameError{})
 	c.Assert(docAll, check.HasLen, 0)
 
-	_, err = s.Store.Update("/foo/bar/", "foo bar")
+	err = s.Store.Update("/foo/bar/", "foo bar")
 	c.Assert(err, check.NotNil)
 	c.Assert(err, check.FitsTypeOf, document.InvalidNameError{})
 }
 
 func (s *DocumentStoreSuite) TestBasic(c *check.C) {
-	ver, err := s.Store.Update("/foo/bar", "foo bar")
+	err := s.Store.Update("/foo/bar", "foo bar")
 	c.Assert(err, check.IsNil)
-	c.Assert(ver, check.Equals, 1)
 
 	doc, err := s.Store.Get("/foo/bar")
 	c.Assert(err, check.IsNil)
@@ -121,13 +120,11 @@ func (s *DocumentStoreSuite) TestBasic(c *check.C) {
 }
 
 func (s *DocumentStoreSuite) TestMultipleVersions(c *check.C) {
-	ver, err := s.Store.Update("/foo/bar", "the duck quacked")
+	err := s.Store.Update("/foo/bar", "the duck quacked")
 	c.Assert(err, check.IsNil)
-	c.Assert(ver, check.Equals, 1)
 
-	ver, err = s.Store.Update("/foo/bar", "qux and baz oh my")
+	err = s.Store.Update("/foo/bar", "qux and baz oh my")
 	c.Assert(err, check.IsNil)
-	c.Assert(ver, check.Equals, 2)
 
 	doc, err := s.Store.Get("/foo/bar")
 	c.Assert(err, check.IsNil)
@@ -141,24 +138,18 @@ func (s *DocumentStoreSuite) TestMultipleVersions(c *check.C) {
 }
 
 func (s *DocumentStoreSuite) TestMultipleDocuments(c *check.C) {
-	ver, err := s.Store.Update("/foo", "foo v1")
+	err := s.Store.Update("/foo", "foo v1")
 	c.Assert(err, check.IsNil)
-	c.Assert(ver, check.Equals, 1)
-	ver, err = s.Store.Update("/foo", "foo v2")
+	err = s.Store.Update("/foo", "foo v2")
 	c.Assert(err, check.IsNil)
-	c.Assert(ver, check.Equals, 2)
-	ver, err = s.Store.Update("/foo/bar", "bar v1")
+	err = s.Store.Update("/foo/bar", "bar v1")
 	c.Assert(err, check.IsNil)
-	c.Assert(ver, check.Equals, 1)
-	ver, err = s.Store.Update("/foo/bar", "bar v2")
+	err = s.Store.Update("/foo/bar", "bar v2")
 	c.Assert(err, check.IsNil)
-	c.Assert(ver, check.Equals, 2)
-	ver, err = s.Store.Update("/foo/bar/baz", "baz v1")
+	err = s.Store.Update("/foo/bar/baz", "baz v1")
 	c.Assert(err, check.IsNil)
-	c.Assert(ver, check.Equals, 1)
-	ver, err = s.Store.Update("/foo/bar/baz", "baz v2")
+	err = s.Store.Update("/foo/bar/baz", "baz v2")
 	c.Assert(err, check.IsNil)
-	c.Assert(ver, check.Equals, 2)
 
 	doc, err := s.Store.Get("/foo")
 	c.Assert(err, check.IsNil)

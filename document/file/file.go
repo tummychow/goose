@@ -106,10 +106,10 @@ func (s *FileDocumentStore) GetAll(name string) ([]document.Document, error) {
 	return ret, nil
 }
 
-func (s *FileDocumentStore) Update(name, content string) (int, error) {
+func (s *FileDocumentStore) Update(name, content string) error {
 	// Update has to check the name before attempting to write the file
 	if !document.ValidateName(name) {
-		return 0, document.InvalidNameError{name}
+		return document.InvalidNameError{name}
 	}
 
 	s.mutex.Lock()
@@ -117,20 +117,16 @@ func (s *FileDocumentStore) Update(name, content string) (int, error) {
 
 	err := os.MkdirAll(filepath.Join(s.root, name), 0755)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	docstamp := time.Now().UTC()
 	err = ioutil.WriteFile(filepath.Join(s.root, name, docstamp.Format(fileTimeFormat)), []byte(content), 0644)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	docdir, err := s.readDirFiles(name)
-	if err != nil {
-		return 0, err
-	}
-	return len(docdir), nil
+	return nil
 }
 
 func (s *FileDocumentStore) Clear() error {

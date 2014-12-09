@@ -70,7 +70,7 @@ func (c WikiController) handleDocument(r *http.Request) (document.Document, erro
 	targetName = path.Clean(targetName)
 
 	if newContent := r.PostFormValue("content"); len(newContent) > 0 {
-		_, err = store.Update(targetName, newContent)
+		err = store.Update(targetName, newContent)
 		if err != nil {
 			return document.Document{}, err
 		}
