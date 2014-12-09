@@ -91,42 +91,6 @@ type DocumentStore interface {
 	// document.InvalidNameError.
 	Update(name, content string) (int, error)
 
-	// Reverts the Document specified by name, to the specified time. All
-	// versions from that time or later will be discarded. Returns the number
-	// of versions discarded.
-	//
-	// If the timestamp has high precision (finer than one second), the extra
-	// precision may be ignored by the implementation. DocumentStore is only
-	// required to support single-second precision; any finer than that is
-	// not guaranteed.
-	//
-	// A Document can be completely deleted by Reverting it to the Timestamp of
-	// its oldest version (or any earlier time).
-	//
-	// Reverting a Document that does not exist must have no effect. The
-	// returns must be zero, and a non-nil document.NotFoundError. Similarly,
-	// invoking Revert with an invalid name returns zero, and a non-nil
-	// document.InvalidNameError.
-	Revert(name string, timestamp time.Time) (int, error)
-
-	// Truncates history for the Document specified by name, to the specified
-	// time. All versions from that time or earlier will be discarded. Returns
-	// the number of versions discarded.
-	//
-	// If the timestamp has high precision (finer than one second), the extra
-	// precision may be ignored by the implementation. DocumentStore is only
-	// required to support single-second precision; any finer than that is
-	// not guaranteed.
-	//
-	// A Document can be completely deleted by Truncating it to the Timestamp
-	// of its newest version (or any later time).
-	//
-	// Truncating a Document that does not exist must have no effect. The
-	// returns must be zero, and a non-nil document.NotFoundError. Similarly,
-	// invoking Truncate with an invalid name returns zero, and a non-nil
-	// document.InvalidNameError.
-	Truncate(name string, timestamp time.Time) (int, error)
-
 	// Clear deletes all versions of all Documents in this DocumentStore. This
 	// operation is highly destructive, and is primarily intended for tests.
 	Clear() error

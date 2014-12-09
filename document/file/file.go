@@ -153,60 +153,6 @@ func (s *FileDocumentStore) Clear() error {
 	return nil
 }
 
-func (s *FileDocumentStore) Revert(name string, version time.Time) (int, error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	docdir, err := s.readDirFiles(name)
-	if err != nil {
-		return 0, err
-	}
-
-	i := len(docdir) - 1 // we need this outside the loop scope
-	for ; i >= 0; i-- {
-		docstamp, err := time.Parse(fileTimeFormat, docdir[i].Name())
-		if err != nil {
-			return 0, err
-		}
-		if docstamp.Equal(version) || docstamp.After(version) {
-			err := os.Remove(filepath.Join(s.root, name, docdir[i].Name()))
-			if err != nil {
-				return 0, err
-			}
-		} else {
-			break
-		}
-	}
-	return len(docdir) - i - 1, nil
-}
-
-func (s *FileDocumentStore) Truncate(name string, version time.Time) (int, error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	docdir, err := s.readDirFiles(name)
-	if err != nil {
-		return 0, err
-	}
-
-	i := 0 // we need this outside the loop scope
-	for ; i < len(docdir); i++ {
-		docstamp, err := time.Parse(fileTimeFormat, docdir[i].Name())
-		if err != nil {
-			return 0, err
-		}
-		if docstamp.Equal(version) || docstamp.Before(version) {
-			err := os.Remove(filepath.Join(s.root, name, docdir[i].Name()))
-			if err != nil {
-				return 0, err
-			}
-		} else {
-			break
-		}
-	}
-	return i, nil
-}
-
 // readDirFiles returns the sorted list of files for the named Document, from
 // oldest to newest. Returns NotFoundError or InvalidNameError as needed.
 func (s *FileDocumentStore) readDirFiles(name string) ([]os.FileInfo, error) {
