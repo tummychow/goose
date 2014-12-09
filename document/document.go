@@ -127,6 +127,10 @@ type DocumentStore interface {
 	// document.InvalidNameError.
 	Truncate(name string, timestamp time.Time) (int, error)
 
+	// Clear deletes all versions of all Documents in this DocumentStore. This
+	// operation is highly destructive, and is primarily intended for tests.
+	Clear() error
+
 	// Returns a new DocumentStore instance that uses the same underlying
 	// storage as the receiver. Copying a DocumentStore should be a lightweight
 	// operation.

@@ -133,6 +133,26 @@ func (s *FileDocumentStore) Update(name, content string) (int, error) {
 	return len(docdir), nil
 }
 
+func (s *FileDocumentStore) Clear() error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	contents, err := ioutil.ReadDir(s.root)
+	if err != nil {
+		return err
+	}
+
+	// delete each file or folder in the root, but not the root itself
+	for _, target := range contents {
+		err = os.RemoveAll(filepath.Join(s.root, target.Name()))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (s *FileDocumentStore) Revert(name string, version time.Time) (int, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
