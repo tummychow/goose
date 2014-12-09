@@ -93,16 +93,6 @@ func (s *DocumentStoreSuite) TestEmpty(c *check.C) {
 	c.Assert(err, check.NotNil)
 	c.Assert(err, check.FitsTypeOf, document.NotFoundError{})
 	c.Assert(docAll, check.HasLen, 0)
-
-	reverts, err := s.Store.Revert("/foo/bar", time.Time{})
-	c.Assert(err, check.NotNil)
-	c.Assert(err, check.FitsTypeOf, document.NotFoundError{})
-	c.Assert(reverts, check.Equals, 0)
-
-	truncates, err := s.Store.Truncate("/foo/bar", time.Time{})
-	c.Assert(err, check.NotNil)
-	c.Assert(err, check.FitsTypeOf, document.NotFoundError{})
-	c.Assert(truncates, check.Equals, 0)
 }
 
 func (s *DocumentStoreSuite) TestInvalidNames(c *check.C) {
@@ -118,16 +108,6 @@ func (s *DocumentStoreSuite) TestInvalidNames(c *check.C) {
 	_, err = s.Store.Update("/foo/bar/", "foo bar")
 	c.Assert(err, check.NotNil)
 	c.Assert(err, check.FitsTypeOf, document.InvalidNameError{})
-
-	reverts, err := s.Store.Revert("/foo/bar/", time.Time{})
-	c.Assert(err, check.NotNil)
-	c.Assert(err, check.FitsTypeOf, document.InvalidNameError{})
-	c.Assert(reverts, check.Equals, 0)
-
-	truncates, err := s.Store.Truncate("/foo/bar/", time.Time{})
-	c.Assert(err, check.NotNil)
-	c.Assert(err, check.FitsTypeOf, document.InvalidNameError{})
-	c.Assert(truncates, check.Equals, 0)
 }
 
 func (s *DocumentStoreSuite) TestBasic(c *check.C) {
@@ -138,19 +118,6 @@ func (s *DocumentStoreSuite) TestBasic(c *check.C) {
 	doc, err := s.Store.Get("/foo/bar")
 	c.Assert(err, check.IsNil)
 	c.Assert(doc, DocumentEquals, "/foo/bar", "foo bar")
-
-	reverts, err := s.Store.Revert("/foo/bar", doc.Timestamp)
-	c.Assert(err, check.IsNil)
-	c.Assert(reverts, check.Equals, 1)
-
-	reverts, err = s.Store.Revert("/foo/bar", doc.Timestamp)
-	c.Assert(err, check.NotNil)
-	c.Assert(err, check.FitsTypeOf, document.NotFoundError{})
-	c.Assert(reverts, check.Equals, 0)
-
-	doc, err = s.Store.Get("/foo/bar")
-	c.Assert(err, check.NotNil)
-	c.Assert(err, check.FitsTypeOf, document.NotFoundError{})
 }
 
 func (s *DocumentStoreSuite) TestMultipleVersions(c *check.C) {
@@ -171,22 +138,6 @@ func (s *DocumentStoreSuite) TestMultipleVersions(c *check.C) {
 	c.Assert(docAll, check.HasLen, 2)
 	c.Assert(docAll[0], DocumentEquals, "/foo/bar", "qux and baz oh my")
 	c.Assert(docAll[1], DocumentEquals, "/foo/bar", "the duck quacked")
-
-	reverts, err := s.Store.Revert("/foo/bar", docAll[0].Timestamp)
-	c.Assert(err, check.IsNil)
-	c.Assert(reverts, check.Equals, 1)
-
-	doc, err = s.Store.Get("/foo/bar")
-	c.Assert(err, check.IsNil)
-	c.Assert(doc, DocumentEquals, "/foo/bar", "the duck quacked")
-
-	truncates, err := s.Store.Truncate("/foo/bar", docAll[1].Timestamp)
-	c.Assert(err, check.IsNil)
-	c.Assert(truncates, check.Equals, 1)
-
-	doc, err = s.Store.Get("/foo/bar")
-	c.Assert(err, check.NotNil)
-	c.Assert(err, check.FitsTypeOf, document.NotFoundError{})
 }
 
 func (s *DocumentStoreSuite) TestMultipleDocuments(c *check.C) {
