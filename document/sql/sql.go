@@ -148,6 +148,10 @@ func (s *SqlDocumentStore) GetAll(name string) ([]document.Document, error) {
 	return ret, nil
 }
 
+func (s *SqlDocumentStore) GetDescendants(ancestor string) ([]string, error) {
+	return []string{}, nil
+}
+
 func (s *SqlDocumentStore) Update(name, content string) error {
 	if !document.ValidateName(name) {
 		return document.InvalidNameError{name}

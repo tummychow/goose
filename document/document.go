@@ -72,6 +72,27 @@ type DocumentStore interface {
 	// returned slice must be empty.
 	GetAll(name string) ([]Document, error)
 
+	// Returns the names of all Documents that are descendants of the specified
+	// Document, in lexicographical order.
+	//
+	// A "descendant" of some Document is another Document whose name is that
+	// of the original Document, plus one or more extra segments. In other
+	// words, any Document whose name matches the regex "/foo/.*" would be a
+	// descendant of the Document "/foo".
+	//
+	// GetDescendants may be invoked with a Document name that doesn't actually
+	// exist in the DocumentStore. Such a name might still have descendants.
+	// For example, if a DocumentStore contained one Document "/foo/bar", then
+	// GetDescendants("/foo") would return "/foo/bar" even though "/foo" itself
+	// doesn't exist. Because of this behavior, GetDescendants does not return
+	// document.NotFoundError.
+	//
+	// The ancestor argument must be a valid Document name, with one exception:
+	// it may be the empty string, which would return all the names in the
+	// entire DocumentStore. In any other case, an invalid name must result in
+	// an empty slice and a non-nil document.InvalidNameError.
+	GetDescendants(ancestor string) ([]string, error)
+
 	// Creates a new version of the Document specified by name, containing the
 	// specified content. The Timestamp of the created version is determined by
 	// the DocumentStore.

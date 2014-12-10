@@ -106,6 +106,10 @@ func (s *FileDocumentStore) GetAll(name string) ([]document.Document, error) {
 	return ret, nil
 }
 
+func (s *FileDocumentStore) GetDescendants(ancestor string) ([]string, error) {
+	return []string{}, nil
+}
+
 func (s *FileDocumentStore) Update(name, content string) error {
 	// Update has to check the name before attempting to write the file
 	if !document.ValidateName(name) {
