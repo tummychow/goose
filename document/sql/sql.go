@@ -50,8 +50,8 @@ func init() {
 // SqlDocumentStore is an implementation of DocumentStore, using a standard SQL
 // database. Currently, only PostgreSQL is supported.
 //
-// SqlDocumentStore is registered with the scheme "postgresql". For example,
-// you can initialize a new SqlDocumentStore via:
+// SqlDocumentStore is registered with the scheme "postgres". For example, you
+// can initialize a new SqlDocumentStore via:
 //
 //     import "github.com/tummychow/goose/document"
 //     import _ "github.com/tummychow/goose/document/sql"
