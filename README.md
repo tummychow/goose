@@ -4,7 +4,7 @@ Simple markdown wiki with Go backend. Written for personal use, so there is a st
 
 ## Installation
 
-Technically Goose has no runtime dependencies (at the moment it doesn't even support databases, just flat files, so you don't need a db server), but I can't be bothered to make a binary distribution or tarball. I do not package the compiled frontend assets or binary, so you will need a variety of tools to build or hack on Goose:
+Technically Goose has no runtime dependencies, but I can't be bothered to make a tarball for it. I do not package the compiled frontend assets or binary, so you will need a variety of tools to build or hack on Goose:
 
 - go 1.3+ with proper `GOPATH` setup and so on
 - node.js 0.10.x
@@ -30,7 +30,39 @@ $ gulp # run dev server
 
 This launches the development server, which watches your JS, CSS and Go files (but you still have to run the tasks manually the first time because the compiled files don't exist yet). The server uses browsersync so you don't have to press F5 a hundred times to be productive. There are a few other gulp tasks implemented or in the works, but the only one you need to know for hacking is the default task.
 
-At the moment, Goose does not require any dependency management. I use gpm internally, but at the moment, Goose's dependencies are all stable enough that I don't feel the need to implement anything more than `go get`. Future dependency management functions may be integrated into the gulpfile, or I might just use godep.
+At the moment, Goose does not require any dependency management. I use gpm internally, but Goose's dependencies are all stable enough that I don't feel the need to implement anything more than `go get`. Future dependency management functions may be integrated into the gulpfile, or I might just use godep.
+
+### Using postgres
+
+By default, the dev server uses a flat file tree rooted at `/tmp/goose`, but Goose 0.2.0+ supports a postgresql database as its backend. At the moment, the target database needs only one table, shown below. Goose does not create the table for you.
+
+```sql
+CREATE TABLE documents (
+    name TEXT NOT NULL,
+    content TEXT NOT NULL,
+    stamp TIMESTAMP NOT NULL DEFAULT clock_timestamp(),
+    PRIMARY KEY (name, stamp)
+);
+```
+
+Once you have the database ready, you can connect to it with the appropriate `GOOSE_BACKEND`:
+
+```bash
+$ export GOOSE_BACKEND=postgres://user:password@:5432/yourdb?sslmode=disable
+$ gulp # the dev server inherits its backend from your environment
+```
+
+Postgres connection URIs are documented [here](http://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-CONNSTRING). [lib/pq](https://github.com/lib/pq) supports most of the options. Note that lib/pq sets `sslmode=require` by default. If you are using an insecure connection (eg a Docker container), be sure to add the query option `sslmode=disable`, as shown above.
+
+## Tests
+
+Testing is a bit lightweight right now, but already somewhat useful. You can invoke `gulp test` to run all the go tests (at the moment Goose doesn't have any JS tests). You may want to set the environment variables `GOOSE_TEST_FILE` and `GOOSE_TEST_SQL` to the appropriate URIs, to test DocumentStore implementation compliance.
+
+```bash
+$ export GOOSE_TEST_FILE=file:///tmp/goose_test
+$ export GOOSE_TEST_SQL=postgres://gooser@:49153/goosetest?sslmode=disable
+$ gulp test
+```
 
 ## Usage
 
@@ -42,8 +74,8 @@ Configuration is by environment variables. Most of them are set for you by gulp 
 
 - `GOOSE_PORT` server port, eg `:4567` (note leading colon)
 - `GOOSE_BACKEND` the backend URI, eg `file:///tmp/goose`
-- `GOOSE_TEST_FILE` for testing the file backend, eg `file:///tmp/goose_test`. These tests will be skipped if this is unset or invalid. If you want `gulp test` to run them, make sure to set it beforehand, eg `GOOSE_TEST_FILE=file:///tmp/goose_test gulp test`.
 - `GOOSE_DEV` to enable development-only behavior, eg template recompilation on every request
+- `GOOSE_TEST_FILE`, `GOOSE_TEST_SQL` to run tests against various DocumentStore implementations. The test suite does basic API sanity checks.
 
 ## License
 
