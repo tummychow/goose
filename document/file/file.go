@@ -107,7 +107,54 @@ func (s *FileDocumentStore) GetAll(name string) ([]document.Document, error) {
 }
 
 func (s *FileDocumentStore) GetDescendants(ancestor string) ([]string, error) {
-	return []string{}, nil
+	if ancestor != "" && !document.ValidateName(ancestor) {
+		return []string{}, document.InvalidNameError{ancestor}
+	}
+
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+
+	ret := []string{}
+
+	// Walk traverses depth-first, inspecting files before directories
+	// note that this algorithm depends on the traversal order
+	err := filepath.Walk(filepath.Join(s.root, ancestor), func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			if pathErr, ok := err.(*os.PathError); ok {
+				if pathErr.Err.Error() == "no such file or directory" {
+					// this means the root of the walk (ie the ancestor
+					// directory) did not exist, which is not an error
+					// the walk will stop and we will return an empty list of
+					// children
+					return nil
+				}
+			}
+			return err
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		// this file represents some document; compute that document's name
+		thisName, _ := filepath.Split(path)
+		thisName = thisName[len(s.root) : len(thisName)-1]
+
+		if ancestor == thisName {
+			// this file corresponds to the ancestor document, so it is not of
+			// interest to us
+			return nil
+		}
+
+		// make sure not to add the same name twice (eg we may have already
+		// inspected another version of this document)
+		if len(ret) == 0 || thisName != ret[len(ret)-1] {
+			ret = append(ret, thisName)
+		}
+		return nil
+	})
+
+	return ret, err
 }
 
 func (s *FileDocumentStore) Update(name, content string) error {
