@@ -29,7 +29,11 @@ func init() {
 			return nil, err
 		}
 
-		update, err := db.Prepare("INSERT INTO documents (name, content) VALUES ($1, $2);")
+		getDescendants, err := db.Prepare(`
+			SELECT DISTINCT name
+			    FROM documents
+			    WHERE name LIKE ($1 || '/%')
+			    ORDER by name ASC;`)
 		if err != nil {
 			get.Close()
 			getAll.Close()
@@ -37,12 +41,22 @@ func init() {
 			return nil, err
 		}
 
+		update, err := db.Prepare("INSERT INTO documents (name, content) VALUES ($1, $2);")
+		if err != nil {
+			get.Close()
+			getAll.Close()
+			getDescendants.Close()
+			db.Close()
+			return nil, err
+		}
+
 		return &SqlDocumentStore{
-			db:       db,
-			get:      get,
-			getAll:   getAll,
-			update:   update,
-			refcount: 1,
+			db:             db,
+			get:            get,
+			getAll:         getAll,
+			getDescendants: getDescendants,
+			update:         update,
+			refcount:       1,
 		}, nil
 	})
 }
@@ -71,11 +85,12 @@ func init() {
 //         PRIMARY KEY (name, stamp)
 //     );
 type SqlDocumentStore struct {
-	db       *sql.DB
-	get      *sql.Stmt
-	getAll   *sql.Stmt
-	update   *sql.Stmt
-	refcount int
+	db             *sql.DB
+	get            *sql.Stmt
+	getAll         *sql.Stmt
+	getDescendants *sql.Stmt
+	update         *sql.Stmt
+	refcount       int
 }
 
 func (s *SqlDocumentStore) Close() {
@@ -83,6 +98,7 @@ func (s *SqlDocumentStore) Close() {
 	if s.refcount == 0 {
 		s.get.Close()
 		s.getAll.Close()
+		s.getDescendants.Close()
 		s.update.Close()
 
 		s.db.Close()
@@ -149,7 +165,32 @@ func (s *SqlDocumentStore) GetAll(name string) ([]document.Document, error) {
 }
 
 func (s *SqlDocumentStore) GetDescendants(ancestor string) ([]string, error) {
-	return []string{}, nil
+	if ancestor != "" && !document.ValidateName(ancestor) {
+		return []string{}, document.InvalidNameError{ancestor}
+	}
+
+	rows, err := s.getDescendants.Query(ancestor)
+	if err != nil {
+		return []string{}, err
+	}
+	defer rows.Close()
+
+	ret := []string{}
+	for rows.Next() {
+		cur := ""
+		err := rows.Scan(&cur)
+		if err != nil {
+			return []string{}, err
+		}
+		ret = append(ret, cur)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return []string{}, err
+	}
+
+	return ret, nil
 }
 
 func (s *SqlDocumentStore) Update(name, content string) error {
