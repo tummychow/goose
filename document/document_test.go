@@ -104,6 +104,10 @@ func (s *DocumentStoreSuite) TestEmpty(c *check.C) {
 	c.Assert(err, check.NotNil)
 	c.Assert(err, check.FitsTypeOf, document.NotFoundError{})
 	c.Assert(docAll, check.HasLen, 0)
+
+	children, err := s.Store.GetDescendants("/foo/bar")
+	c.Assert(err, check.IsNil)
+	c.Assert(children, check.HasLen, 0)
 }
 
 func (s *DocumentStoreSuite) TestInvalidNames(c *check.C) {
@@ -119,6 +123,15 @@ func (s *DocumentStoreSuite) TestInvalidNames(c *check.C) {
 	err = s.Store.Update("/foo/bar/", "foo bar")
 	c.Assert(err, check.NotNil)
 	c.Assert(err, check.FitsTypeOf, document.InvalidNameError{})
+
+	// the empty string is not invalid for GetDescendants
+	_, err = s.Store.GetDescendants("")
+	c.Assert(err, check.IsNil)
+
+	children, err := s.Store.GetDescendants("/foo/bar/")
+	c.Assert(err, check.NotNil)
+	c.Assert(err, check.FitsTypeOf, document.InvalidNameError{})
+	c.Assert(children, check.HasLen, 0)
 }
 
 func (s *DocumentStoreSuite) TestBasic(c *check.C) {
@@ -171,4 +184,44 @@ func (s *DocumentStoreSuite) TestMultipleDocuments(c *check.C) {
 	doc, err = s.Store.Get("/foo/bar/baz")
 	c.Assert(err, check.IsNil)
 	c.Assert(doc, DocumentEquals, "/foo/bar/baz", "baz v2")
+}
+
+func (s *DocumentStoreSuite) TestDescendants(c *check.C) {
+	/* tree structure:
+	 * ├─ foo
+	 * │  ├─ bar (X)
+	 * │  │  └─ baz
+	 * │  └─ qux
+	 * └─ sf (X)
+	 *    └─ nu (X)
+	 *       └─ ab (X)
+	 *          └─ fa (X)
+	 *             └─ ur
+	 */
+	err := s.Store.Update("/foo", "lorem ipsum")
+	c.Assert(err, check.IsNil)
+	err = s.Store.Update("/foo", "lorem ipsum two")
+	c.Assert(err, check.IsNil)
+	err = s.Store.Update("/foo/bar/baz", "lorem ipsum")
+	c.Assert(err, check.IsNil)
+	err = s.Store.Update("/foo/qux", "lorem ipsum")
+	c.Assert(err, check.IsNil)
+	err = s.Store.Update("/sf/nu/ab/fa/ur", "lorem ipsum")
+	c.Assert(err, check.IsNil)
+
+	children, err := s.Store.GetDescendants("")
+	c.Assert(err, check.IsNil)
+	c.Assert(children, check.DeepEquals, []string{"/foo", "/foo/bar/baz", "/foo/qux", "/sf/nu/ab/fa/ur"})
+
+	children, err = s.Store.GetDescendants("/foo")
+	c.Assert(err, check.IsNil)
+	c.Assert(children, check.DeepEquals, []string{"/foo/bar/baz", "/foo/qux"})
+
+	children, err = s.Store.GetDescendants("/foo/bar")
+	c.Assert(err, check.IsNil)
+	c.Assert(children, check.DeepEquals, []string{"/foo/bar/baz"})
+
+	children, err = s.Store.GetDescendants("/sf/nu")
+	c.Assert(err, check.IsNil)
+	c.Assert(children, check.DeepEquals, []string{"/sf/nu/ab/fa/ur"})
 }
