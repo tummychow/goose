@@ -54,20 +54,11 @@ func (c WikiController) Save(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c WikiController) handleDocument(r *http.Request) (document.Document, error) {
-	store, err := c.Store.Copy()
+	store, targetName, err := c.pre(r)
 	if err != nil {
 		return document.Document{}, err
 	}
 	defer store.Close()
-
-	targetName, err := url.QueryUnescape(r.URL.Path[2:])
-	if err != nil {
-		return document.Document{}, err
-	}
-	// gorilla invokes path.Clean already but it restores trailing slashes,
-	// and we need to remove those
-	// https://github.com/gorilla/mux/blob/master/mux.go#L69
-	targetName = path.Clean(targetName)
 
 	if newContent := r.PostFormValue("content"); len(newContent) > 0 {
 		err = store.Update(targetName, newContent)
@@ -77,4 +68,25 @@ func (c WikiController) handleDocument(r *http.Request) (document.Document, erro
 	}
 
 	return store.Get(targetName)
+}
+
+func (c WikiController) pre(r *http.Request) (document.DocumentStore, string, error) {
+	store, err := c.Store.Copy()
+	if err != nil {
+		return nil, "", err
+	}
+
+	targetName, err := url.QueryUnescape(r.URL.Path[2:])
+	if err != nil {
+		return nil, "", err
+	}
+	// gorilla invokes path.Clean already but it restores trailing slashes,
+	// and we need to remove those
+	// https://github.com/gorilla/mux/blob/master/mux.go#L69
+	targetName = path.Clean(targetName)
+	if targetName == "." || targetName == "/" {
+		targetName = ""
+	}
+
+	return store, targetName, nil
 }
