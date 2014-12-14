@@ -53,6 +53,20 @@ func (c WikiController) Save(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (c WikiController) List(w http.ResponseWriter, r *http.Request) {
+	targetName, children, unknownErr := c.listDocument(r)
+
+	switch err := unknownErr.(type) {
+	case nil:
+		c.Render.HTML(w, http.StatusOK, "wikilist", map[string]interface{}{
+			"Name":     targetName,
+			"Children": children,
+		})
+	default:
+		c.Render.HTML(w, http.StatusInternalServerError, "wiki500", err.Error())
+	}
+}
+
 func (c WikiController) handleDocument(r *http.Request) (document.Document, error) {
 	store, targetName, err := c.pre(r)
 	if err != nil {
@@ -68,6 +82,17 @@ func (c WikiController) handleDocument(r *http.Request) (document.Document, erro
 	}
 
 	return store.Get(targetName)
+}
+
+func (c WikiController) listDocument(r *http.Request) (string, []string, error) {
+	store, targetName, err := c.pre(r)
+	if err != nil {
+		return "", []string{}, err
+	}
+	defer store.Close()
+
+	children, err := store.GetDescendants(targetName)
+	return targetName, children, err
 }
 
 func (c WikiController) pre(r *http.Request) (document.DocumentStore, string, error) {

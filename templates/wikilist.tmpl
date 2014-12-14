@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en-US">
+  {{ template "head" .Name }}
+  <body>
+    <nav class="nav">
+      <div class="container">
+        {{ if (len .Name) gt 0 }}
+          <a class="pagename current" href="/w{{ .Name }}">{{ .Name }}</a>
+          <a href="/">Home</a>
+        {{ else }}
+          <a class="pagename current" href="/">Goose</a>
+        {{ end }}
+      </div>
+    </nav>
+
+    <div class="container">
+      {{ if (len .Children) gt 0 }}
+        <ul>{{ range .Children }}
+          <li><a href="/w{{ . }}">{{ . }}</a></li>
+        {{ end }}</ul>
+      {{ else }}
+        <strong>{{ .Name }}</strong> has no descendants.
+      {{ end }}
+    </div>
+  </body>
+</html>

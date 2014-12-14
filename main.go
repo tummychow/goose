@@ -48,6 +48,7 @@ func main() {
 		Render: renderer,
 	}
 	r.Methods("GET", "POST").Path("/w{_:/.+}").HandlerFunc(wcon.Show)
+	r.Methods("GET").Path("/l{_:/.*|$}").HandlerFunc(wcon.List)
 	r.Methods("GET").Path("/e{_:/.+}").HandlerFunc(wcon.Edit)
 	r.Methods("POST").Path("/e{_:/.+}").HandlerFunc(wcon.Save)
 
